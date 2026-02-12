@@ -55,12 +55,10 @@
     }
   ],
 
-  "action": {
-    "default_icon": {
-      "16": "icons/icon16.svg",
-      "48": "icons/icon48.svg",
-      "128": "icons/icon128.svg"
-    },
+ "action": {
+  "default_title": "Save Job to Airtable"
+},
+
     "default_title": "Save Job to Airtable"
   },
 
@@ -69,9 +67,3 @@
     "open_in_tab": true
   },
 
-  "icons": {
-    "16": "icons/icon16.svg",
-    "48": "icons/icon48.svg",
-    "128": "icons/icon128.svg"
-  }
-}

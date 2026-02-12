@@ -1,0 +1,710 @@
+/* Job Tracker Extension - Dark Glass / Mirror Aesthetic */
+/* Bold, editorial, frosted glass — inspired by modern UI trends */
+
+/* ==================== FLOATING SAVE BUTTON ==================== */
+.job-tracker-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: linear-gradient(135deg, rgba(30,30,38,0.92), rgba(18,18,24,0.96)) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.job-tracker-floating-btn:hover {
+  background: linear-gradient(135deg, rgba(40,40,50,0.95), rgba(24,24,30,0.98)) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12);
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,0.18) !important;
+}
+
+.job-tracker-floating-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.job-tracker-floating-btn svg {
+  flex-shrink: 0;
+  stroke: #FFFFFF;
+}
+
+.job-tracker-floating-btn span {
+  white-space: nowrap;
+}
+
+/* ==================== TOAST NOTIFICATION ==================== */
+.job-tracker-toast {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  z-index: 2147483647;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(30,30,35,0.85), rgba(20,20,25,0.92)) !important;
+  color: #F0F0F2;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.job-tracker-toast.success {
+  border-color: rgba(52, 199, 89, 0.25);
+  color: #4ADE80;
+}
+
+.job-tracker-toast.success::before {
+  content: '✓';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #34D058, #28A745);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(52,199,89,0.4);
+}
+
+.job-tracker-toast.error {
+  border-color: rgba(255, 59, 48, 0.25);
+  color: #FF6B6B;
+}
+
+.job-tracker-toast.error::before {
+  content: '✕';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #FF4757, #FF3B30);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(255,59,48,0.4);
+}
+
+.job-tracker-toast.fade-out {
+  animation: toastSlideOut 0.25s ease-in forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+}
+
+/* ==================== FLOATING PANEL ==================== */
+.job-tracker-panel {
+  position: fixed;
+  z-index: 2147483647;
+  width: 340px !important;
+  min-width: 300px !important;
+  max-width: 480px !important;
+  height: auto;
+  min-height: 300px !important;
+  max-height: 82vh !important;
+  background: linear-gradient(165deg, rgba(28,28,35,0.88), rgba(18,18,22,0.95)) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 16px;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+}
+
+.job-tracker-panel.hidden {
+  display: none !important;
+}
+
+.job-tracker-panel.dragging {
+  opacity: 0.92;
+  cursor: grabbing;
+}
+
+/* ==================== PANEL HEADER ==================== */
+.panel-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 14px 18px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0 !important;
+}
+
+.panel-header:active {
+  cursor: grabbing;
+}
+
+.panel-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  letter-spacing: -0.3px;
+}
+
+.panel-emoji {
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.panel-actions {
+  display: flex !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+  margin-left: 8px !important;
+}
+
+/* Header buttons — frosted glass pills */
+.panel-settings-btn,
+.panel-minimize-btn,
+.panel-close-btn {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.5) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease;
+}
+
+.panel-settings-btn:hover,
+.panel-minimize-btn:hover {
+  background: rgba(255,255,255,0.14) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.panel-close-btn:hover {
+  background: rgba(255,59,48,0.7) !important;
+  border-color: rgba(255,59,48,0.4) !important;
+  color: #FFFFFF !important;
+}
+
+/* ==================== PANEL BODY ==================== */
+.panel-body {
+  padding: 18px !important;
+  flex: 1;
+  overflow-y: auto;
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-body.minimized {
+  display: none;
+}
+
+/* ==================== PANEL RESIZE HANDLE ==================== */
+.panel-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.panel-resize-handle::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid rgba(255,255,255,0.12);
+  border-bottom: 2px solid rgba(255,255,255,0.12);
+}
+
+/* ==================== PANEL FORM STYLES ==================== */
+#panel-job-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-form-group {
+  margin-bottom: 14px !important;
+}
+
+.panel-form-group label {
+  display: block;
+  font-size: 11px !important;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4) !important;
+  margin-bottom: 6px !important;
+  letter-spacing: 0.4px;
+}
+
+.panel-form-group .required {
+  color: #FF6B6B !important;
+}
+
+.panel-form-group input,
+.panel-form-group select,
+.panel-form-group textarea {
+  width: 100%;
+  padding: 11px 14px !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500;
+  color: #FFFFFF !important;
+  background: rgba(255,255,255,0.06) !important;
+  font-family: inherit;
+  transition: all 0.25s ease;
+}
+
+.panel-form-group input::placeholder,
+.panel-form-group textarea::placeholder {
+  color: rgba(255,255,255,0.25) !important;
+}
+
+.panel-form-group input:hover,
+.panel-form-group select:hover,
+.panel-form-group textarea:hover {
+  background: rgba(255,255,255,0.09) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+.panel-form-group input:focus,
+.panel-form-group select:focus,
+.panel-form-group textarea:focus {
+  outline: none;
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* Dropdowns — clean, no arrow clutter */
+.panel-form-group select {
+  cursor: pointer;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 32px !important;
+}
+
+.panel-form-group select option {
+  background: #1C1C24 !important;
+  color: #FFFFFF !important;
+}
+
+.panel-form-group textarea {
+  resize: vertical;
+  min-height: 48px !important;
+}
+
+/* Date input — no ugly default styling */
+.panel-form-group input[type="date"] {
+  padding: 11px 14px !important;
+  color-scheme: dark;
+}
+
+/* ==================== TWO-COLUMN LAYOUT ==================== */
+.panel-form-row {
+  display: flex;
+  gap: 10px !important;
+  align-items: flex-start;
+}
+
+.panel-form-group.half {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-form-row .panel-form-group.half select,
+.panel-form-row .panel-form-group.half input {
+  height: 40px !important;
+}
+
+/* ==================== PANEL AUTOFILL BUTTON ==================== */
+.panel-autofill-btn {
+  display: none !important;
+}
+
+/* ==================== PANEL META INFO (Source Bar) ==================== */
+.panel-meta-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px !important;
+  padding: 10px 14px !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 10px !important;
+}
+
+.panel-source-row {
+  display: flex;
+  align-items: center;
+  gap: 8px !important;
+  flex: 1;
+}
+
+.panel-source-label {
+  font-size: 11px !important;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35) !important;
+  letter-spacing: 0.3px;
+}
+
+.panel-source-select {
+  flex: 1;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  background: rgba(255,255,255,0.08) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5' fill='none'%3E%3Cpath d='M1 1L4 4L7 1' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  padding-right: 24px !important;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.panel-source-select option {
+  background: #1C1C24 !important;
+  color: #FFFFFF !important;
+}
+
+.panel-source-select:hover {
+  background: rgba(255,255,255,0.12) !important;
+}
+
+.panel-source-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
+}
+
+/* Copy link button */
+.panel-copy-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px !important;
+  height: 30px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.4) !important;
+  transition: all 0.2s ease;
+}
+
+.panel-copy-link-btn:hover {
+  background: rgba(255,255,255,0.12) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.panel-copy-link-btn .copy-icon {
+  font-size: 14px !important;
+  line-height: 1;
+}
+
+/* ==================== PANEL ERROR ==================== */
+.panel-error {
+  padding: 10px 14px !important;
+  background: rgba(255, 59, 48, 0.1) !important;
+  color: #FF6B6B !important;
+  border: 1px solid rgba(255, 59, 48, 0.15) !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  margin-bottom: 14px !important;
+}
+
+.panel-error.hidden {
+  display: none;
+}
+
+/* ==================== PANEL SAVE BUTTON ==================== */
+.panel-save-button {
+  width: 100%;
+  padding: 13px 16px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06)) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px !important;
+}
+
+.panel-save-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)) !important;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.18) !important;
+}
+
+.panel-save-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+.panel-save-button:disabled {
+  background: rgba(255,255,255,0.04) !important;
+  color: rgba(255,255,255,0.2) !important;
+  border-color: rgba(255,255,255,0.04) !important;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.panel-save-button .btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-save-button .btn-loading.hidden,
+.panel-save-button .btn-text.hidden {
+  display: none;
+}
+
+.panel-spinner {
+  display: inline-block;
+  width: 14px !important;
+  height: 14px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top: 2px solid #FFFFFF !important;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== PANEL CONNECTION STATUS ==================== */
+.panel-connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px !important;
+  padding: 10px 16px !important;
+  background: rgba(255,255,255,0.03) !important;
+  border-top: 1px solid rgba(255,255,255,0.04) !important;
+  margin: 14px -18px -18px -18px !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+.panel-status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+.panel-status-text {
+  font-size: 11px !important;
+  font-weight: 500;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.2px;
+}
+
+.panel-connection-status.connected .panel-status-dot {
+  background: #4ADE80;
+  box-shadow: 0 0 8px rgba(74,222,128,0.5);
+}
+
+.panel-connection-status.connected .panel-status-text {
+  color: rgba(74,222,128,0.8);
+}
+
+.panel-connection-status.disconnected .panel-status-dot {
+  background: #FF6B6B;
+  box-shadow: 0 0 8px rgba(255,107,107,0.4);
+}
+
+.panel-connection-status.disconnected .panel-status-text {
+  color: rgba(255,107,107,0.8);
+}
+
+/* ==================== PANEL SUCCESS ROW ==================== */
+.panel-success-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px !important;
+  margin-top: 12px !important;
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-success-row.hidden {
+  display: none;
+}
+
+.panel-success-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+  background: rgba(74,222,128,0.1) !important;
+  color: #4ADE80 !important;
+  border: 1px solid rgba(74,222,128,0.15) !important;
+  border-radius: 10px !important;
+}
+
+.panel-success-badge .success-checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px !important;
+  height: 18px !important;
+  background: linear-gradient(135deg, #4ADE80, #22C55E) !important;
+  color: #000000 !important;
+  font-weight: 700;
+  font-size: 11px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 6px rgba(74,222,128,0.35);
+}
+
+.panel-success-badge .success-text {
+  font-size: 12px !important;
+  font-weight: 600;
+  color: #4ADE80 !important;
+}
+
+.panel-save-another-btn {
+  padding: 10px 14px !important;
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.panel-save-another-btn:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255,255,255,0.14) !important;
+}
+
+/* ==================== PANEL SCROLLBAR ==================== */
+.panel-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+}
+
+.panel-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ==================== ENSURE STYLES DON'T GET OVERRIDDEN ==================== */
+.job-tracker-panel *,
+.job-tracker-panel *::before,
+.job-tracker-panel *::after,
+.job-tracker-floating-btn,
+.job-tracker-floating-btn *,
+.job-tracker-toast,
+.job-tracker-toast * {
+  box-sizing: border-box;
+  line-height: 1.4;
+}

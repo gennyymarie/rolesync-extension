@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Tracker Settings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      background: #0C0C10;
+      min-height: 100vh;
+      padding: 48px 20px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Header Card — frosted glass */
+    .header-card {
+      background: linear-gradient(165deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px 30px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 12px 40px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .header-card h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      letter-spacing: -0.4px;
+    }
+
+    .header-emoji {
+      font-size: 22px;
+    }
+
+    .header-card .subtitle {
+      color: rgba(255,255,255,0.35);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: -0.1px;
+    }
+
+    /* Main Card — frosted glass */
+    .main-card {
+      background: linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow:
+        0 16px 48px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 28px;
+    }
+
+    .info-box h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .info-box h3::before {
+      content: '💡';
+      font-size: 14px;
+    }
+
+    .info-box ol {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .info-box li {
+      margin-bottom: 4px;
+    }
+
+    .info-box a {
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      transition: all 0.2s ease;
+    }
+
+    .info-box a:hover {
+      color: #FFFFFF;
+      border-bottom-color: rgba(255,255,255,0.4);
+    }
+
+    .info-box code {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .info-box strong {
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    .hint strong {
+      color: rgba(255,255,255,0.4);
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.06);
+      transition: all 0.25s ease;
+    }
+
+    input:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.2);
+      font-weight: 400;
+    }
+
+    /* Buttons */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: -0.1px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+      color: #FFFFFF;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.1);
+      color: #FFFFFF;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Messages */
+    .message {
+      padding: 12px 16px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .message.success {
+      background: rgba(74, 222, 128, 0.1);
+      color: #4ADE80;
+      border-color: rgba(74, 222, 128, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .message.success::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #4ADE80, #22C55E);
+      color: #000;
+      font-weight: 700;
+      font-size: 12px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(74,222,128,0.35);
+    }
+
+    .message.error {
+      background: rgba(255, 107, 107, 0.1);
+      color: #FF6B6B;
+      border-color: rgba(255, 107, 107, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .message.error::before {
+      content: '✕';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #FF6B6B, #FF3B30);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 12px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(255,59,48,0.35);
+    }
+
+    /* Connection Status */
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      margin-top: 18px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .connection-status.connected {
+      background: rgba(74, 222, 128, 0.08);
+      border-color: rgba(74, 222, 128, 0.12);
+      color: #4ADE80;
+    }
+
+    .connection-status.disconnected {
+      background: rgba(255, 107, 107, 0.08);
+      border-color: rgba(255, 107, 107, 0.12);
+      color: #FF6B6B;
+    }
+
+    .connection-status.unknown {
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.3);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border: none;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .connected .status-dot {
+      background: #4ADE80;
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+    }
+
+    .disconnected .status-dot {
+      background: #FF6B6B;
+      box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+    }
+
+    .unknown .status-dot {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Footer */
+    .footer-decoration {
+      text-align: center;
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 10px;
+    }
+
+    .footer-decoration span {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Card -->
+  <div class="container">
+    <div class="header-card">
+      <h1>
+        <span class="header-emoji">⚙️</span>
+        Settings
+      </h1>
+      <p class="subtitle">Connect your Airtable account to start tracking jobs</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+      <div id="message" class="message"></div>
+
+      <div class="info-box">
+        <h3>How to get your credentials</h3>
+        <ol>
+          <li>Go to <a href="https://airtable.com/create/tokens" target="_blank">airtable.com/create/tokens</a></li>
+          <li>Create a token with <strong>data.records:write</strong> scope</li>
+          <li>Add your "Job Applications" base</li>
+          <li>Copy the token (starts with <code>pat...</code>)</li>
+          <li>Find your Base ID in the URL (starts with <code>app...</code>)</li>
+        </ol>
+      </div>
+
+      <form id="settings-form">
+        <div class="form-group">
+          <label for="api-token">API Token</label>
+          <input type="password" id="api-token" name="api-token" placeholder="pat..." required>
+          <p class="hint">Personal Access Token from Airtable</p>
+        </div>
+
+        <div class="form-group">
+          <label for="base-id">Base ID</label>
+          <input type="text" id="base-id" name="base-id" placeholder="app..." required>
+          <p class="hint">Found in your base URL: airtable.com/<strong>appXXXXXXXX</strong>/...</p>
+        </div>
+
+        <div class="form-group">
+          <label for="table-name">Table Name</label>
+          <input type="text" id="table-name" name="table-name" placeholder="Job Applications" value="Job Applications">
+          <p class="hint">Must match your table name exactly (case-sensitive)</p>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary" id="save-btn">
+            Save Settings
+          </button>
+          <button type="button" class="btn btn-secondary" id="test-btn">
+            Test Connection
+          </button>
+        </div>
+
+        <div id="connection-status" class="connection-status unknown">
+          <span class="status-dot"></span>
+          <span id="status-text">Not tested yet</span>
+        </div>
+      </form>
+    </div>
+
+    <div class="footer-decoration">
+      <span>Job Tracker Extension</span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

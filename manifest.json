@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "Job Tracker - Save to Airtable",
+  "version": "1.0.0",
+  "description": "Extract job postings from LinkedIn, Handshake, ZipRecruiter, and career sites. Save directly to Airtable.",
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://linkedin.com/*",
+    "https://app.joinhandshake.com/*",
+    "https://joinhandshake.com/*",
+    "https://www.ziprecruiter.com/*",
+    "https://ziprecruiter.com/*",
+    "https://api.airtable.com/*",
+    "https://*.greenhouse.io/*",
+    "https://jobs.lever.co/*",
+    "https://*.myworkdayjobs.com/*",
+    "https://*.icims.com/*",
+    "https://*.smartrecruiters.com/*",
+    "https://*.jobvite.com/*",
+    "https://*.ashbyhq.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/jobs/*",
+        "https://www.linkedin.com/job/*",
+        "https://linkedin.com/jobs/*",
+        "https://linkedin.com/job/*",
+        "https://app.joinhandshake.com/*",
+        "https://www.ziprecruiter.com/jobs/*",
+        "https://www.ziprecruiter.com/c/*",
+        "https://*.greenhouse.io/*",
+        "https://jobs.lever.co/*",
+        "https://*.myworkdayjobs.com/*",
+        "https://*.icims.com/*",
+        "https://*.smartrecruiters.com/*",
+        "https://*.jobvite.com/*",
+        "https://*.ashbyhq.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.svg",
+      "48": "icons/icon48.svg",
+      "128": "icons/icon128.svg"
+    },
+    "default_title": "Save Job to Airtable"
+  },
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+
+  "icons": {
+    "16": "icons/icon16.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
+  }
+}

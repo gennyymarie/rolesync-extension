@@ -2,7 +2,7 @@
 /* Bold, editorial, frosted glass — inspired by modern UI trends */
 
 /* ==================== FLOATING SAVE BUTTON ==================== */
-.job-tracker-floating-btn {
+.rolesync-floating-btn {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -26,29 +26,29 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.job-tracker-floating-btn:hover {
+.rolesync-floating-btn:hover {
   background: linear-gradient(135deg, rgba(40,40,50,0.95), rgba(24,24,30,0.98)) !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12);
   transform: translateY(-3px);
   border-color: rgba(255,255,255,0.18) !important;
 }
 
-.job-tracker-floating-btn:active {
+.rolesync-floating-btn:active {
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-.job-tracker-floating-btn svg {
+.rolesync-floating-btn svg {
   flex-shrink: 0;
   stroke: #FFFFFF;
 }
 
-.job-tracker-floating-btn span {
+.rolesync-floating-btn span {
   white-space: nowrap;
 }
 
 /* ==================== TOAST NOTIFICATION ==================== */
-.job-tracker-toast {
+.rolesync-toast {
   position: fixed;
   bottom: 100px;
   right: 24px;
@@ -70,12 +70,12 @@
   gap: 10px;
 }
 
-.job-tracker-toast.success {
+.rolesync-toast.success {
   border-color: rgba(52, 199, 89, 0.25);
   color: #4ADE80;
 }
 
-.job-tracker-toast.success::before {
+.rolesync-toast.success::before {
   content: '✓';
   display: inline-flex;
   align-items: center;
@@ -90,12 +90,12 @@
   box-shadow: 0 2px 8px rgba(52,199,89,0.4);
 }
 
-.job-tracker-toast.error {
+.rolesync-toast.error {
   border-color: rgba(255, 59, 48, 0.25);
   color: #FF6B6B;
 }
 
-.job-tracker-toast.error::before {
+.rolesync-toast.error::before {
   content: '✕';
   display: inline-flex;
   align-items: center;
@@ -110,7 +110,7 @@
   box-shadow: 0 2px 8px rgba(255,59,48,0.4);
 }
 
-.job-tracker-toast.fade-out {
+.rolesync-toast.fade-out {
   animation: toastSlideOut 0.25s ease-in forwards;
 }
 
@@ -137,7 +137,7 @@
 }
 
 /* ==================== FLOATING PANEL ==================== */
-.job-tracker-panel {
+.rolesync-panel {
   position: fixed;
   z-index: 2147483647;
   width: 340px !important;
@@ -162,11 +162,11 @@
   resize: both;
 }
 
-.job-tracker-panel.hidden {
+.rolesync-panel.hidden {
   display: none !important;
 }
 
-.job-tracker-panel.dragging {
+.rolesync-panel.dragging {
   opacity: 0.92;
   cursor: grabbing;
 }
@@ -698,13 +698,13 @@
 }
 
 /* ==================== ENSURE STYLES DON'T GET OVERRIDDEN ==================== */
-.job-tracker-panel *,
-.job-tracker-panel *::before,
-.job-tracker-panel *::after,
-.job-tracker-floating-btn,
-.job-tracker-floating-btn *,
-.job-tracker-toast,
-.job-tracker-toast * {
+.rolesync-panel *,
+.rolesync-panel *::before,
+.rolesync-panel *::after,
+.rolesync-floating-btn,
+.rolesync-floating-btn *,
+.rolesync-toast,
+.rolesync-toast * {
   box-sizing: border-box;
   line-height: 1.4;
 }

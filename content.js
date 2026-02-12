@@ -837,12 +837,12 @@
 
   function injectSaveButton() {
     // Remove existing button if present
-    const existing = document.getElementById('job-tracker-save-btn');
+    const existing = document.getElementById('rolesync-save-btn');
     if (existing) existing.remove();
 
     const button = document.createElement('button');
-    button.id = 'job-tracker-save-btn';
-    button.className = 'job-tracker-floating-btn';
+    button.id = 'rolesync-save-btn';
+    button.className = 'rolesync-floating-btn';
     button.innerHTML = `
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
@@ -861,12 +861,12 @@
   }
 
   function showToast(message) {
-    const existing = document.getElementById('job-tracker-toast');
+    const existing = document.getElementById('rolesync-toast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
-    toast.id = 'job-tracker-toast';
-    toast.className = 'job-tracker-toast';
+    toast.id = 'rolesync-toast';
+    toast.className = 'rolesync-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
 
@@ -943,7 +943,7 @@
   let dragOffsetY = 0;
 
   function togglePanel() {
-    const existingPanel = document.getElementById('job-tracker-panel');
+    const existingPanel = document.getElementById('rolesync-panel');
 
     if (existingPanel) {
       if (panelVisible) {
@@ -971,8 +971,8 @@
     }
 
     const panel = document.createElement('div');
-    panel.id = 'job-tracker-panel';
-    panel.className = 'job-tracker-panel';
+    panel.id = 'rolesync-panel';
+    panel.className = 'rolesync-panel';
     panel.innerHTML = `
       <div class="panel-header" id="panel-header">
         <div class="panel-title">
@@ -1255,7 +1255,7 @@
   function populatePanelForm(data) {
     if (!data) data = {};
 
-    const panel = document.getElementById('job-tracker-panel');
+    const panel = document.getElementById('rolesync-panel');
     if (!panel) return;
 
     // Set text inputs
@@ -1311,7 +1311,7 @@
   async function handlePanelSubmit(e) {
     e.preventDefault();
 
-    const panel = document.getElementById('job-tracker-panel');
+    const panel = document.getElementById('rolesync-panel');
     const form = panel.querySelector('#panel-job-form');
     const errorEl = panel.querySelector('#panel-error');
     const saveBtn = panel.querySelector('#panel-save-btn');

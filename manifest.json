@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Job Tracker - Save to Airtable",
+  "name": "RoleSync",
   "version": "1.0.0",
   "description": "Extract job postings from LinkedIn, Handshake, ZipRecruiter, and career sites. Save directly to Airtable.",
 

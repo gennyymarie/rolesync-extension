@@ -86,7 +86,7 @@
       // Site-specific selectors to wait for
       const selectors = {
         linkedin: '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, .topcard__title, h1.t-24, .job-view-layout h1, h1[class*="job"], h1',
-        handshake: '[data-hook="job-title"], h1',
+        handshake: '[data-hook="job-title"], h1[class*="job"], h1[class*="Job"], h1',
         ziprecruiter: 'h1.job_title, .job_header h1, h1',
         generic: 'h1'
       };
@@ -321,68 +321,222 @@
   function extractHandshake() {
     const data = {};
 
+    console.log('RoleSync: Extracting Handshake data...');
+
     // Try JSON-LD first
     const jsonLdData = extractJsonLd();
     if (jsonLdData.jobTitle) {
       Object.assign(data, jsonLdData);
+      console.log('RoleSync: Got JSON-LD data:', jsonLdData);
     }
 
-    // Job Title
+    // Job Title - h1 is usually the job title on Handshake
     if (!data.jobTitle) {
       const titleSelectors = [
         '[data-hook="job-title"]',
         'h1[class*="JobTitle"]',
-        '.style__job-title',
+        'h1[class*="job-title"]',
+        '[class*="style__job-title"]',
         'h1'
       ];
       data.jobTitle = getFirstMatch(titleSelectors);
+      console.log('RoleSync: Found title:', data.jobTitle);
     }
 
-    // Company
+    // Company - try employer links and nearby elements
     if (!data.company) {
       const companySelectors = [
         '[data-hook="employer-name"]',
         'a[href*="/employers/"]',
-        '[class*="EmployerName"]'
+        'a[href*="/employer/"]',
+        '[class*="EmployerName"]',
+        '[class*="employer-name"]',
+        '[class*="company-name"]',
+        '[data-testid*="employer"]',
+        '[data-testid*="company"]',
+        '[aria-label*="employer"]',
+        '[aria-label*="company"]'
       ];
       data.company = getFirstMatch(companySelectors);
+
+      // Fallback: look for a link near the h1 that goes to /employers/
+      if (!data.company) {
+        const h1 = document.querySelector('h1');
+        if (h1) {
+          // Search siblings and parent's children for employer links
+          const container = h1.closest('div') || h1.parentElement;
+          if (container) {
+            const employerLink = container.querySelector('a[href*="/employers/"]') ||
+                                 container.querySelector('a[href*="/employer/"]');
+            if (employerLink) {
+              data.company = cleanText(employerLink.textContent);
+            }
+          }
+          // Also check the element right after h1
+          if (!data.company) {
+            let sibling = h1.nextElementSibling;
+            while (sibling && !data.company) {
+              const link = sibling.querySelector ? sibling.querySelector('a') : null;
+              if (link && link.textContent.trim().length > 1 && link.textContent.trim().length < 80) {
+                data.company = cleanText(link.textContent);
+              }
+              sibling = sibling.nextElementSibling;
+            }
+          }
+        }
+      }
+      console.log('RoleSync: Found company:', data.company);
     }
 
-    // Location
-    const locationSelectors = [
-      '[data-hook="job-location"]',
-      '[class*="JobLocation"]',
-      '[class*="location"]'
-    ];
-    data.location = data.location || getFirstMatch(locationSelectors);
+    // Scan the page for label-value pairs (Handshake uses structured detail sections)
+    // This catches salary, location, job type, work model, deadline, etc.
+    const detailsFromPage = extractHandshakeDetails();
+    console.log('RoleSync: Extracted detail pairs:', detailsFromPage);
 
-    // Deadline
-    const deadlineSelectors = [
-      '[data-hook="apply-deadline"]',
-      '[class*="deadline"]',
-      'time[datetime]'
-    ];
-    const deadlineEl = document.querySelector(deadlineSelectors.join(', '));
-    if (deadlineEl) {
-      data.deadline = deadlineEl.getAttribute('datetime') || deadlineEl.textContent.trim();
+    // Location
+    if (!data.location) {
+      data.location = detailsFromPage.location || getFirstMatch([
+        '[data-hook="job-location"]',
+        '[class*="JobLocation"]',
+        '[class*="job-location"]',
+        '[class*="location"]',
+        '[data-testid*="location"]'
+      ]);
+    }
+
+    // Salary
+    if (!data.salary) {
+      data.salary = detailsFromPage.salary || getFirstMatch([
+        '[data-hook="compensation"]',
+        '[class*="salary"]',
+        '[class*="compensation"]',
+        '[class*="pay"]'
+      ]);
     }
 
     // Job Type
-    const jobTypeSelectors = [
-      '[data-hook="job-type"]',
-      '[class*="employment-type"]'
-    ];
-    data.jobType = data.jobType || getFirstMatch(jobTypeSelectors);
+    if (!data.jobType) {
+      data.jobType = detailsFromPage.jobType || getFirstMatch([
+        '[data-hook="job-type"]',
+        '[class*="employment-type"]',
+        '[class*="job-type"]'
+      ]);
+    }
 
-    // Salary
-    const salarySelectors = [
-      '[data-hook="compensation"]',
-      '[class*="salary"]',
-      '[class*="compensation"]'
-    ];
-    data.salary = data.salary || getFirstMatch(salarySelectors);
+    // Work Model (remote/hybrid/on-site)
+    if (!data.workModel) {
+      data.workModel = detailsFromPage.workModel;
+    }
 
+    // Deadline
+    if (!data.deadline) {
+      data.deadline = detailsFromPage.deadline;
+      if (!data.deadline) {
+        const deadlineEl = document.querySelector('[data-hook="apply-deadline"], [class*="deadline"], time[datetime]');
+        if (deadlineEl) {
+          data.deadline = deadlineEl.getAttribute('datetime') || deadlineEl.textContent.trim();
+        }
+      }
+    }
+
+    // Final fallback: scan the whole page text for salary and job type
+    if (!data.salary || !data.jobType || !data.workModel) {
+      const bodyText = document.body.innerText || '';
+      if (!data.salary) data.salary = extractSalaryFromText(bodyText);
+      if (!data.jobType) data.jobType = extractJobType(bodyText);
+      if (!data.workModel) data.workModel = extractWorkModel(bodyText);
+    }
+
+    console.log('RoleSync: Final Handshake data:', data);
     return data;
+  }
+
+  // Scan the Handshake page for structured label-value detail pairs
+  // Handshake displays job details as label/value pairs in various formats
+  function extractHandshakeDetails() {
+    const result = {};
+    const bodyText = document.body.innerText || '';
+    const lines = bodyText.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // Strategy 1: Look for known labels followed by values in the text
+    const labelPatterns = [
+      { labels: ['salary', 'compensation', 'pay'], field: 'salary' },
+      { labels: ['location', 'locations'], field: 'location' },
+      { labels: ['job type', 'employment type', 'position type'], field: 'jobType' },
+      { labels: ['work model', 'workplace', 'workplace type', 'work location'], field: 'workModel' },
+      { labels: ['deadline', 'apply by', 'application deadline', 'apply before'], field: 'deadline' }
+    ];
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineLower = lines[i].toLowerCase();
+
+      for (const pattern of labelPatterns) {
+        if (result[pattern.field]) continue;
+
+        const isLabelLine = pattern.labels.some(label => {
+          // The line is the label itself or starts with it
+          return lineLower === label ||
+                 lineLower.startsWith(label + ':') ||
+                 lineLower.startsWith(label + ' ');
+        });
+
+        if (isLabelLine) {
+          // Check if value is on the same line after a colon
+          const colonIdx = lines[i].indexOf(':');
+          if (colonIdx !== -1 && colonIdx < lines[i].length - 1) {
+            result[pattern.field] = lines[i].substring(colonIdx + 1).trim();
+          } else if (i + 1 < lines.length) {
+            // Value is on the next line
+            result[pattern.field] = lines[i + 1];
+          }
+        }
+      }
+    }
+
+    // Strategy 2: Look for salary patterns anywhere in the text
+    if (!result.salary) {
+      const salaryMatch = bodyText.match(/\$[\d,]+(?:\.\d{2})?\s*[-–—\/]\s*\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|Hour|Year))?/i) ||
+                          bodyText.match(/\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|Hour|Year))/i);
+      if (salaryMatch) {
+        result.salary = salaryMatch[0].trim();
+      }
+    }
+
+    // Strategy 3: Detect work model from location text or any mention
+    if (!result.workModel) {
+      // Check if the location field itself mentions hybrid/remote
+      const locText = result.location || '';
+      const workModel = extractWorkModel(locText);
+      if (workModel) {
+        result.workModel = workModel;
+      }
+    }
+
+    // Strategy 4: Normalize job type
+    if (result.jobType) {
+      const normalized = extractJobType(result.jobType);
+      if (normalized) result.jobType = normalized;
+    }
+
+    // Strategy 5: Look for all elements with text content matching patterns
+    // This helps with React apps where data-* attributes are absent
+    if (!result.salary || !result.location || !result.company) {
+      const allElements = document.querySelectorAll('span, p, div, a, li, dd, td');
+      for (const el of allElements) {
+        // Skip very large elements (containers)
+        if (el.children.length > 3) continue;
+        const text = el.textContent.trim();
+        if (text.length > 200 || text.length < 2) continue;
+
+        // Salary detection
+        if (!result.salary && /\$\d/.test(text) && (text.includes('/') || text.includes('hr') || text.includes('yr') || text.includes('hour') || text.includes('year') || text.includes('–') || text.includes('-'))) {
+          const salaryCandidate = extractSalaryFromText(text);
+          if (salaryCandidate) result.salary = salaryCandidate;
+        }
+      }
+    }
+
+    return result;
   }
 
   // ==================== ZIPRECRUITER EXTRACTION ====================

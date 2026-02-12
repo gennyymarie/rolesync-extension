@@ -149,21 +149,19 @@
 
     console.log('Job Tracker: Extracting LinkedIn data...');
 
-    // Job Title - try multiple selectors (updated for 2024/2025 LinkedIn)
+    // Job Title - try multiple selectors (updated for current LinkedIn DOM)
     const titleSelectors = [
-      // New LinkedIn selectors
       '.job-details-jobs-unified-top-card__job-title h1',
       '.job-details-jobs-unified-top-card__job-title a',
       '.job-details-jobs-unified-top-card__job-title',
       '.jobs-unified-top-card__job-title h1',
       '.jobs-unified-top-card__job-title a',
       '.jobs-unified-top-card__job-title',
-      // Older selectors
       'h1.t-24.t-bold.inline',
       'h1.t-24.t-bold',
       '.jobs-details-top-card__job-title',
       '.topcard__title',
-      // Fallback - any h1 in the job details area
+      '.job-details h1',
       '.jobs-details h1',
       '.job-view-layout h1'
     ];
@@ -173,14 +171,15 @@
     // Company - updated selectors
     const companySelectors = [
       '.job-details-jobs-unified-top-card__company-name a',
-      '.job-details-jobs-unified-top-card__primary-description-container a',
       '.job-details-jobs-unified-top-card__company-name',
+      '.job-details-jobs-unified-top-card__primary-description-container a',
       '.jobs-unified-top-card__company-name a',
       '.jobs-unified-top-card__company-name',
       '.jobs-details-top-card__company-url',
       '.topcard__org-name-link',
       '.jobs-company__name a',
-      'a[data-tracking-control-name="public_jobs_topcard-org-name"]'
+      'a[data-tracking-control-name="public_jobs_topcard-org-name"]',
+      'a[data-tracking-control-name="public_jobs_topcard_org-name"]'
     ];
     data.company = getFirstMatch(companySelectors);
     console.log('Job Tracker: Found company:', data.company);
@@ -193,43 +192,109 @@
       '.jobs-unified-top-card__subtitle-primary-grouping .tvm__text',
       '.jobs-details-top-card__bullet',
       '.topcard__flavor--bullet',
-      '.jobs-company__location'
+      '.jobs-company__location',
+      '.job-details-jobs-unified-top-card__primary-description-container span.tvm__text'
     ];
     data.location = getFirstMatch(locationSelectors);
     console.log('Job Tracker: Found location:', data.location);
 
-    // Job insights (contains job type, work model, salary) - updated selectors
+    // --- Job insights: jobType, workModel, salary ---
+    // LinkedIn packs these into insight elements, often combining
+    // "Full-time · Remote" or "Full-time · Hybrid" in one span.
     const insightSelectors = [
       '.job-details-jobs-unified-top-card__job-insight',
       '.job-details-jobs-unified-top-card__job-insight-view-model-secondary',
       '.jobs-unified-top-card__job-insight',
+      '.job-details-preferences-and-skills .job-details-preferences-and-skills__pill',
       '.jobs-description-content__text li',
-      '.description__job-criteria-item'
+      '.description__job-criteria-item',
+      // Individual spans inside insight containers
+      '.job-details-jobs-unified-top-card__job-insight span',
+      '.jobs-unified-top-card__job-insight span'
     ];
     const insights = document.querySelectorAll(insightSelectors.join(', '));
     console.log('Job Tracker: Found insights:', insights.length);
 
     insights.forEach(insight => {
       const text = insight.textContent.toLowerCase();
-      if (text.includes('remote') || text.includes('hybrid') || text.includes('on-site') || text.includes('onsite')) {
-        data.workModel = extractWorkModel(insight.textContent);
+
+      // Work model detection
+      if (!data.workModel) {
+        if (text.includes('remote') || text.includes('hybrid') || text.includes('on-site') || text.includes('onsite') || text.includes('in-office') || text.includes('in office')) {
+          data.workModel = extractWorkModel(insight.textContent);
+        }
       }
-      if (text.includes('full-time') || text.includes('part-time') || text.includes('contract') || text.includes('internship') || text.includes('temporary')) {
-        data.jobType = extractJobType(insight.textContent);
+
+      // Job type detection
+      if (!data.jobType) {
+        if (text.includes('full-time') || text.includes('full time') || text.includes('part-time') || text.includes('part time') || text.includes('contract') || text.includes('internship') || text.includes('intern ') || text.includes('temporary') || text.includes('freelance') || text.includes('volunteer')) {
+          data.jobType = extractJobType(insight.textContent);
+        }
       }
-      if (text.includes('$') || text.includes('yr') || text.includes('/hr') || text.includes('salary') || text.includes('compensation')) {
-        data.salary = insight.textContent.trim();
+
+      // Salary detection
+      if (!data.salary) {
+        if (text.includes('$') || text.includes('€') || text.includes('£') || text.includes('/yr') || text.includes('/hr') || text.includes('/year') || text.includes('/hour') || text.includes('salary') || text.includes('compensation') || text.includes('per year') || text.includes('per hour') || text.includes('annually')) {
+          data.salary = cleanText(insight.textContent);
+        }
       }
     });
 
-    // Also try to get job type from the primary description area
-    if (!data.jobType) {
-      const primaryDesc = document.querySelector('.job-details-jobs-unified-top-card__primary-description-container');
-      if (primaryDesc) {
-        const text = primaryDesc.textContent;
-        data.jobType = extractJobType(text);
-        if (!data.workModel) {
-          data.workModel = extractWorkModel(text);
+    // Try the primary description area (contains "City · Type · Model" line)
+    if (!data.jobType || !data.workModel) {
+      const primaryDescSelectors = [
+        '.job-details-jobs-unified-top-card__primary-description-container',
+        '.job-details-jobs-unified-top-card__primary-description',
+        '.jobs-unified-top-card__subtitle-primary-grouping'
+      ];
+      for (const sel of primaryDescSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const text = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(text);
+          if (!data.workModel) data.workModel = extractWorkModel(text);
+          break;
+        }
+      }
+    }
+
+    // Try the job criteria section (older LinkedIn layout)
+    if (!data.jobType || !data.workModel) {
+      const criteriaItems = document.querySelectorAll('.description__job-criteria-item');
+      criteriaItems.forEach(item => {
+        const header = item.querySelector('.description__job-criteria-subheader');
+        const value = item.querySelector('.description__job-criteria-text');
+        if (header && value) {
+          const headerText = header.textContent.toLowerCase().trim();
+          const valueText = value.textContent.trim();
+          if (headerText.includes('employment type') && !data.jobType) {
+            data.jobType = extractJobType(valueText);
+          }
+          if (headerText.includes('job function') || headerText.includes('workplace type')) {
+            if (!data.workModel) data.workModel = extractWorkModel(valueText);
+          }
+        }
+      });
+    }
+
+    // Fallback: scan the full job description body
+    if (!data.jobType || !data.workModel || !data.salary) {
+      const descSelectors = [
+        '.jobs-description-content__text',
+        '.jobs-description__content',
+        '.job-details-jobs-unified-top-card__job-description',
+        '#job-details',
+        '.jobs-box__html-content',
+        'article'
+      ];
+      for (const sel of descSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const descText = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(descText);
+          if (!data.workModel) data.workModel = extractWorkModel(descText);
+          if (!data.salary) data.salary = extractSalaryFromText(descText);
+          break;
         }
       }
     }
@@ -379,19 +444,23 @@
       Object.assign(data, jsonLdData);
     }
 
-    // Priority 2: Common patterns
+    // Priority 2: Common patterns for job title
     if (!data.jobTitle) {
       const titleCandidates = [
         document.querySelector('h1'),
         document.querySelector('[class*="job-title"]'),
+        document.querySelector('[class*="job_title"]'),
+        document.querySelector('[class*="jobTitle"]'),
         document.querySelector('[class*="position-title"]'),
-        document.querySelector('[data-automation*="title"]')
+        document.querySelector('[class*="posting-title"]'),
+        document.querySelector('[data-automation*="title"]'),
+        document.querySelector('[data-testid*="title"]')
       ];
       const titleEl = titleCandidates.find(el => el && el.textContent.trim());
       data.jobTitle = titleEl ? titleEl.textContent.trim() : '';
     }
 
-    // Priority 3: Meta tags
+    // Priority 3: Meta tags for title
     if (!data.jobTitle) {
       data.jobTitle = document.querySelector('meta[property="og:title"]')?.content || '';
     }
@@ -399,14 +468,88 @@
     // Company from URL patterns or page content
     if (!data.company) {
       data.company = extractCompanyFromUrl() ||
-        document.querySelector('[class*="company"]')?.textContent.trim() ||
+        getFirstMatch([
+          '[class*="company-name"]',
+          '[class*="companyName"]',
+          '[class*="company_name"]',
+          '[class*="employer"]',
+          '[data-automation*="company"]',
+          '[data-testid*="company"]'
+        ]) ||
         document.querySelector('meta[property="og:site_name"]')?.content || '';
     }
 
     // Location
     if (!data.location) {
-      const locationEl = document.querySelector('[class*="location"], [data-automation*="location"]');
-      data.location = locationEl ? locationEl.textContent.trim() : '';
+      data.location = getFirstMatch([
+        '[class*="job-location"]',
+        '[class*="jobLocation"]',
+        '[class*="job_location"]',
+        '[class*="location"]',
+        '[data-automation*="location"]',
+        '[data-testid*="location"]'
+      ]);
+    }
+
+    // Job type from structured elements
+    if (!data.jobType) {
+      data.jobType = getFirstMatch([
+        '[class*="employment-type"]',
+        '[class*="employmentType"]',
+        '[class*="employment_type"]',
+        '[class*="job-type"]',
+        '[class*="jobType"]',
+        '[class*="job_type"]',
+        '[data-automation*="employment"]',
+        '[data-testid*="job-type"]'
+      ]);
+    }
+
+    // Work model from structured elements
+    if (!data.workModel) {
+      data.workModel = getFirstMatch([
+        '[class*="workplace-type"]',
+        '[class*="workplaceType"]',
+        '[class*="work-model"]',
+        '[class*="workModel"]',
+        '[class*="remote"]'
+      ]);
+    }
+
+    // Salary from structured elements
+    if (!data.salary) {
+      data.salary = getFirstMatch([
+        '[class*="salary"]',
+        '[class*="compensation"]',
+        '[class*="pay-range"]',
+        '[class*="payRange"]',
+        '[data-automation*="salary"]',
+        '[data-testid*="salary"]'
+      ]);
+    }
+
+    // Fallback: scan full page body for missing fields
+    if (!data.jobType || !data.workModel || !data.salary) {
+      const bodySelectors = [
+        '.job-description',
+        '[class*="job-description"]',
+        '[class*="jobDescription"]',
+        '[class*="posting-description"]',
+        '[class*="description"]',
+        'article',
+        'main',
+        '.content'
+      ];
+      for (const sel of bodySelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.textContent.length > 100) {
+          const descText = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(descText);
+          if (!data.workModel) data.workModel = extractWorkModel(descText);
+          if (!data.salary) data.salary = extractSalaryFromText(descText);
+          break;
+        }
+      }
     }
 
     return data;
@@ -439,7 +582,14 @@
           data.location = extractLocationFromJsonLd(jobPosting.jobLocation);
           data.salary = formatSalaryFromJsonLd(jobPosting.baseSalary);
           data.deadline = jobPosting.validThrough || '';
-          data.jobType = jobPosting.employmentType || '';
+          const empType = jobPosting.employmentType;
+          data.jobType = Array.isArray(empType) ? empType.join(', ') : (empType || '');
+          // JSON-LD jobLocationType indicates remote/telecommute
+          const locType = jobPosting.jobLocationType;
+          if (locType) {
+            const locTypeStr = Array.isArray(locType) ? locType.join(', ') : locType;
+            data.workModel = locTypeStr;
+          }
           break;
         }
       } catch (e) {
@@ -537,21 +687,43 @@
 
   function extractWorkModel(text) {
     if (!text) return '';
-    const lower = text.toLowerCase();
-    if (lower.includes('remote')) return 'Remote';
+    const lower = text.toLowerCase().replace(/[_\-]/g, ' ');
+    // Order matters: check "hybrid" before "remote" since some listings say "remote/hybrid"
     if (lower.includes('hybrid')) return 'Hybrid';
-    if (lower.includes('on-site') || lower.includes('onsite') || lower.includes('in-office')) return 'On-site';
+    if (lower.includes('remote') || lower.includes('telecommute') || lower.includes('work from home') || lower.includes('wfh')) return 'Remote';
+    if (lower.includes('on site') || lower.includes('onsite') || lower.includes('in office') || lower.includes('in person')) return 'On-site';
     return '';
   }
 
   function extractJobType(text) {
     if (!text) return '';
-    const lower = text.toLowerCase();
-    if (lower.includes('full-time') || lower.includes('full time')) return 'Full-time';
-    if (lower.includes('part-time') || lower.includes('part time')) return 'Part-time';
-    if (lower.includes('contract')) return 'Contract';
-    if (lower.includes('internship') || lower.includes('intern')) return 'Internship';
-    if (lower.includes('temporary')) return 'Temporary';
+    // Normalize underscores/hyphens and lowercase for matching
+    const lower = text.toLowerCase().replace(/[_\-]/g, ' ');
+    // Check most specific patterns first to avoid false positives
+    // (e.g., "intern" matching inside "international")
+    if (lower.includes('full time') || lower.includes('fulltime')) return 'Full-time';
+    if (lower.includes('part time') || lower.includes('parttime')) return 'Part-time';
+    if (lower.includes('internship') || /\bintern\b/.test(lower)) return 'Internship';
+    if (lower.includes('contract') || lower.includes('contractor') || lower.includes('freelance')) return 'Contract';
+    if (lower.includes('temporary') || lower.includes('temp ') || lower.includes('seasonal')) return 'Temporary';
+    if (lower.includes('volunteer')) return 'Volunteer';
+    return '';
+  }
+
+  function extractSalaryFromText(text) {
+    if (!text) return '';
+    // Match common salary patterns: $80,000 - $100,000, $50/hr, $80K-$100K, etc.
+    const patterns = [
+      /\$[\d,]+(?:\.\d{2})?\s*[-–—to]+\s*\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|annually|per\s+year|per\s+hour|a\s+year))?/i,
+      /\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|annually|per\s+year|per\s+hour|a\s+year))/i,
+      /\$\d+[kK]\s*[-–—to]+\s*\$\d+[kK]/i,
+      /(?:salary|compensation|pay)[:\s]*\$[\d,]+(?:\.\d{2})?(?:\s*[-–—to]+\s*\$[\d,]+(?:\.\d{2})?)?/i,
+      /(?:€|£)[\d,]+(?:\.\d{2})?\s*[-–—to]+\s*(?:€|£)[\d,]+(?:\.\d{2})?/i
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) return match[0].trim();
+    }
     return '';
   }
 
@@ -603,11 +775,25 @@
       }
     }
 
+    // Normalize jobType: re-run through extractJobType to ensure it matches
+    // dropdown values exactly (handles JSON-LD formats like "FULL_TIME")
+    const rawJobType = cleanText(data.jobType) || '';
+    const normalizedJobType = extractJobType(rawJobType) || rawJobType;
+    // Only keep the value if it matches a known dropdown option
+    const validJobTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Temporary'];
+    const finalJobType = validJobTypes.includes(normalizedJobType) ? normalizedJobType : '';
+
+    // Normalize workModel similarly
+    const rawWorkModel = cleanText(data.workModel) || '';
+    const normalizedWorkModel = extractWorkModel(rawWorkModel) || rawWorkModel;
+    const validWorkModels = ['Remote', 'Hybrid', 'On-site'];
+    const finalWorkModel = validWorkModels.includes(normalizedWorkModel) ? normalizedWorkModel : '';
+
     return {
       company: company,
       jobTitle: cleanText(data.jobTitle) || '',
-      jobType: extractJobType(data.jobType) || data.jobType || '',
-      workModel: extractWorkModel(data.workModel || data.jobType || '') || '',
+      jobType: finalJobType,
+      workModel: finalWorkModel,
       salary: cleanText(data.salary) || '',
       location: cleanText(data.location) || '',
       dateApplied: '',

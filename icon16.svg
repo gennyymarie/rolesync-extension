@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Background -->
+  <rect width="16" height="16" rx="3" fill="#FFD400"/>
+  <rect x="0.5" y="0.5" width="15" height="15" rx="2.5" fill="none" stroke="#000000" stroke-width="1"/>
+  <!-- Briefcase body -->
+  <rect x="2" y="6" width="12" height="8" rx="1.5" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  <!-- Briefcase handle -->
+  <path d="M5 6V4.5C5 4 5.5 3.5 6 3.5H10C10.5 3.5 11 4 11 4.5V6" stroke="#000000" stroke-width="1.2" fill="none"/>
+  <!-- Briefcase detail -->
+  <rect x="6.5" y="8.5" width="3" height="2" rx="0.5" fill="#4DA3FF" stroke="#000000" stroke-width="0.5"/>
+</svg>

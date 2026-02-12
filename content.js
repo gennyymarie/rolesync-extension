@@ -7,6 +7,7 @@
   // Store extracted data for popup retrieval
   let extractedJobData = null;
   let currentSite = null;
+  let isReady = false;
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
@@ -26,12 +27,22 @@
         console.log('RoleSync: Final extracted data:', extractedJobData);
         injectSaveButton();
         storeDataForPopup();
+        isReady = true;
       });
 
       // Re-extract when URL changes (SPA navigation)
       observeUrlChanges();
     } else {
-      console.log('RoleSync: No job site detected');
+      // Even on non-job pages, mark as ready so the panel can open
+      // (it will just show empty fields for manual entry)
+      console.log('RoleSync: No job site detected, attempting generic extraction');
+      extractedJobData = extractGeneric();
+      extractedJobData.source = 'Other';
+      extractedJobData.link = cleanUrl(window.location.href);
+      extractedJobData.status = 'Not Applied';
+      extractedJobData = normalizeJobData(extractedJobData);
+      storeDataForPopup();
+      isReady = true;
     }
   }
 
@@ -41,7 +52,7 @@
     const hostname = window.location.hostname;
     const pathname = window.location.pathname;
 
-    if (hostname.includes('linkedin.com') && pathname.includes('/jobs/')) {
+    if (hostname.includes('linkedin.com') && (pathname.includes('/jobs/') || pathname.includes('/job/'))) {
       return 'linkedin';
     }
     if (hostname.includes('joinhandshake.com')) {
@@ -74,7 +85,7 @@
 
       // Site-specific selectors to wait for
       const selectors = {
-        linkedin: '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, .topcard__title, h1.t-24, .job-view-layout h1',
+        linkedin: '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, .topcard__title, h1.t-24, .job-view-layout h1, h1[class*="job"], h1',
         handshake: '[data-hook="job-title"], h1',
         ziprecruiter: 'h1.job_title, .job_header h1, h1',
         generic: 'h1'
@@ -163,7 +174,9 @@
       '.topcard__title',
       '.job-details h1',
       '.jobs-details h1',
-      '.job-view-layout h1'
+      '.job-view-layout h1',
+      'h1[class*="job"]',
+      'h1'
     ];
     data.jobTitle = getFirstMatch(titleSelectors);
     console.log('RoleSync: Found title:', data.jobTitle);
@@ -916,19 +929,38 @@
   // ==================== MESSAGE LISTENER ====================
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'ping') {
+      sendResponse({ ready: isReady });
+      return true;
+    }
+
     if (request.action === 'getJobData') {
       // Re-extract fresh data
       if (currentSite) {
         extractedJobData = extractJobData();
       }
       sendResponse({
-        success: !!extractedJobData,
+        success: !!(extractedJobData && (extractedJobData.jobTitle || extractedJobData.company)),
         data: extractedJobData,
         site: currentSite
       });
     }
 
     if (request.action === 'togglePanel') {
+      // If data hasn't been extracted yet, try now
+      if (!extractedJobData || (!extractedJobData.jobTitle && !extractedJobData.company)) {
+        currentSite = currentSite || detectSite();
+        if (currentSite) {
+          extractedJobData = extractJobData();
+        } else {
+          extractedJobData = extractGeneric();
+          extractedJobData.source = 'Other';
+          extractedJobData.link = cleanUrl(window.location.href);
+          extractedJobData.status = 'Not Applied';
+          extractedJobData = normalizeJobData(extractedJobData);
+        }
+        storeDataForPopup();
+      }
       togglePanel();
       sendResponse({ success: true });
     }
@@ -953,10 +985,11 @@
         existingPanel.classList.remove('hidden');
         panelVisible = true;
         // Refresh data when showing
+        currentSite = currentSite || detectSite();
         if (currentSite) {
           extractedJobData = extractJobData();
-          populatePanelForm(extractedJobData);
         }
+        populatePanelForm(extractedJobData);
       }
     } else {
       // Create panel if it doesn't exist
@@ -965,9 +998,12 @@
   }
 
   function createPanel() {
-    // Re-extract data
-    if (currentSite) {
-      extractedJobData = extractJobData();
+    // Re-extract data if we don't have any
+    if (!extractedJobData || (!extractedJobData.jobTitle && !extractedJobData.company)) {
+      currentSite = currentSite || detectSite();
+      if (currentSite) {
+        extractedJobData = extractJobData();
+      }
     }
 
     const panel = document.createElement('div');

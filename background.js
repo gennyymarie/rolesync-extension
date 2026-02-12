@@ -24,14 +24,29 @@ chrome.action.onClicked.addListener(async (tab) => {
         target: { tabId: tab.id },
         files: ['styles.css']
       });
-      // Now send the toggle message
-      setTimeout(async () => {
+      // Wait for content script to initialize and extract data before toggling panel.
+      // Content script sets rolesync_ready on window when extraction completes.
+      // Poll for readiness up to 10 seconds.
+      let attempts = 0;
+      const maxAttempts = 40; // 40 x 250ms = 10 seconds
+      const waitForReady = setInterval(async () => {
+        attempts++;
         try {
-          await chrome.tabs.sendMessage(tab.id, { action: 'togglePanel' });
+          const response = await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
+          if (response && response.ready) {
+            clearInterval(waitForReady);
+            await chrome.tabs.sendMessage(tab.id, { action: 'togglePanel' });
+          } else if (attempts >= maxAttempts) {
+            clearInterval(waitForReady);
+            // Open panel anyway with whatever data we have
+            await chrome.tabs.sendMessage(tab.id, { action: 'togglePanel' });
+          }
         } catch (e) {
-          console.log('Could not toggle panel:', e);
+          if (attempts >= maxAttempts) {
+            clearInterval(waitForReady);
+          }
         }
-      }, 100);
+      }, 250);
     } catch (injectError) {
       console.log('Could not inject content script:', injectError);
     }

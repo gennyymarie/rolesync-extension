@@ -1,4 +1,4 @@
-// Options page for Job Tracker extension
+// Options page for RoleSync extension
 
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();

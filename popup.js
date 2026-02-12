@@ -1,4 +1,4 @@
-// Popup script for Job Tracker extension
+// Popup script for RoleSync extension
 
 document.addEventListener('DOMContentLoaded', init);
 

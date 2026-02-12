@@ -1,4 +1,4 @@
-// Background service worker for Job Tracker extension
+// Background service worker for RoleSync extension
 // Handles Airtable API communication
 
 // Handle extension icon click - toggle panel in content script

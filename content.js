@@ -1,4 +1,4 @@
-// Content script for Job Tracker extension
+// Content script for RoleSync extension
 // Detects job sites and extracts job posting data
 
 (function() {
@@ -17,13 +17,13 @@
 
   function init() {
     currentSite = detectSite();
-    console.log('Job Tracker: Initialized on', window.location.hostname, '- Detected site:', currentSite);
+    console.log('RoleSync: Initialized on', window.location.hostname, '- Detected site:', currentSite);
 
     if (currentSite) {
       // Wait for dynamic content to load (especially for SPAs like LinkedIn)
       waitForJobContent().then(() => {
         extractedJobData = extractJobData();
-        console.log('Job Tracker: Final extracted data:', extractedJobData);
+        console.log('RoleSync: Final extracted data:', extractedJobData);
         injectSaveButton();
         storeDataForPopup();
       });
@@ -31,7 +31,7 @@
       // Re-extract when URL changes (SPA navigation)
       observeUrlChanges();
     } else {
-      console.log('Job Tracker: No job site detected');
+      console.log('RoleSync: No job site detected');
     }
   }
 
@@ -70,7 +70,7 @@
 
   function waitForJobContent() {
     return new Promise((resolve) => {
-      console.log('Job Tracker: Waiting for job content on', currentSite);
+      console.log('RoleSync: Waiting for job content on', currentSite);
 
       // Site-specific selectors to wait for
       const selectors = {
@@ -84,7 +84,7 @@
       const element = document.querySelector(selector);
 
       if (element && element.textContent.trim()) {
-        console.log('Job Tracker: Content found immediately');
+        console.log('RoleSync: Content found immediately');
         resolve();
         return;
       }
@@ -93,7 +93,7 @@
       const observer = new MutationObserver((mutations, obs) => {
         const el = document.querySelector(selector);
         if (el && el.textContent.trim()) {
-          console.log('Job Tracker: Content found via observer');
+          console.log('RoleSync: Content found via observer');
           obs.disconnect();
           resolve();
         }
@@ -106,7 +106,7 @@
 
       // Timeout fallback - increased to 8 seconds for slow-loading LinkedIn pages
       setTimeout(() => {
-        console.log('Job Tracker: Timeout reached, proceeding anyway');
+        console.log('RoleSync: Timeout reached, proceeding anyway');
         observer.disconnect();
         resolve();
       }, 8000);
@@ -147,7 +147,7 @@
   function extractLinkedIn() {
     const data = {};
 
-    console.log('Job Tracker: Extracting LinkedIn data...');
+    console.log('RoleSync: Extracting LinkedIn data...');
 
     // Job Title - try multiple selectors (updated for current LinkedIn DOM)
     const titleSelectors = [
@@ -166,7 +166,7 @@
       '.job-view-layout h1'
     ];
     data.jobTitle = getFirstMatch(titleSelectors);
-    console.log('Job Tracker: Found title:', data.jobTitle);
+    console.log('RoleSync: Found title:', data.jobTitle);
 
     // Company - updated selectors
     const companySelectors = [
@@ -182,7 +182,7 @@
       'a[data-tracking-control-name="public_jobs_topcard_org-name"]'
     ];
     data.company = getFirstMatch(companySelectors);
-    console.log('Job Tracker: Found company:', data.company);
+    console.log('RoleSync: Found company:', data.company);
 
     // Location - updated selectors
     const locationSelectors = [
@@ -196,7 +196,7 @@
       '.job-details-jobs-unified-top-card__primary-description-container span.tvm__text'
     ];
     data.location = getFirstMatch(locationSelectors);
-    console.log('Job Tracker: Found location:', data.location);
+    console.log('RoleSync: Found location:', data.location);
 
     // --- Job insights: jobType, workModel, salary ---
     // LinkedIn packs these into insight elements, often combining
@@ -213,7 +213,7 @@
       '.jobs-unified-top-card__job-insight span'
     ];
     const insights = document.querySelectorAll(insightSelectors.join(', '));
-    console.log('Job Tracker: Found insights:', insights.length);
+    console.log('RoleSync: Found insights:', insights.length);
 
     insights.forEach(insight => {
       const text = insight.textContent.toLowerCase();
@@ -299,7 +299,7 @@
       }
     }
 
-    console.log('Job Tracker: Extracted data:', data);
+    console.log('RoleSync: Extracted data:', data);
     return data;
   }
 
@@ -976,7 +976,7 @@
     panel.innerHTML = `
       <div class="panel-header" id="panel-header">
         <div class="panel-title">
-          <span>Job Tracker</span>
+          <span>RoleSync</span>
         </div>
         <div class="panel-actions">
           <button class="panel-settings-btn" id="panel-settings" title="Settings">⚙</button>

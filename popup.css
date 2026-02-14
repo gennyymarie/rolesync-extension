@@ -435,10 +435,10 @@ button[type="submit"]:active {
 .save-success {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .success-icon {
@@ -477,10 +477,10 @@ button[type="submit"]:active {
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .no-job-icon,
@@ -634,10 +634,10 @@ button[type="submit"]:active {
 .state-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 24px;
-  text-align: center;
+  text-align: left;
 }
 
 .state-icon {
@@ -663,6 +663,7 @@ button[type="submit"]:active {
   padding: 16px;
   overflow-y: auto;
   max-height: 480px;
+  text-align: left;
 }
 
 /* Form Halves */

@@ -56,7 +56,7 @@ body {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 2px solid var(--accent-coral);
 }
 
 .header-title,
@@ -64,14 +64,50 @@ body {
 h1 {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--accent-coral);
   letter-spacing: -0.2px;
 }
 
 .header-buttons,
 .header-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+/* Header Save Button */
+.header-save-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #FFFFFF;
+  background: var(--accent-coral);
+  border: none;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(224, 115, 86, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-save-btn:hover {
+  background: var(--accent-coral-hover);
+  box-shadow: 0 3px 10px rgba(224, 115, 86, 0.4);
+  transform: translateY(-1px);
+}
+
+.header-save-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(224, 115, 86, 0.3);
+}
+
+.header-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .header-btn,
@@ -734,32 +770,7 @@ button[type="submit"]:active {
   line-height: 1.4;
 }
 
-/* Save Button */
-.save-button {
-  width: 100%;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  color: #FFFFFF;
-  background: var(--accent-coral);
-  border: none;
-  border-radius: var(--radius-medium);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(224, 115, 86, 0.3);
-  transition: all 0.2s ease;
-}
-
-.save-button:hover {
-  background: var(--accent-coral-hover);
-  box-shadow: 0 4px 12px rgba(224, 115, 86, 0.4);
-  transform: translateY(-1px);
-}
-
-.save-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(224, 115, 86, 0.3);
-}
+/* Save Button (legacy full-width — replaced by header save btn) */
 
 .btn-text {
   display: inline;

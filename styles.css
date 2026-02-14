@@ -6,7 +6,7 @@
 /* ==================== FLOATING SAVE BUTTON ==================== */
 .rolesync-floating-btn {
   position: fixed;
-  bottom: 24px;
+  top: 24px;
   right: 24px;
   z-index: 2147483647;
   display: flex;

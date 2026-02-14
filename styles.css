@@ -1,6 +1,8 @@
 /* RoleSync Extension - Dark Glass / Mirror Aesthetic */
 /* Bold, editorial, frosted glass — inspired by modern UI trends */
 
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
 /* ==================== FLOATING SAVE BUTTON ==================== */
 .rolesync-floating-btn {
   position: fixed;
@@ -15,7 +17,7 @@
   color: #FFFFFF !important;
   border: 1px solid rgba(255,255,255,0.12) !important;
   border-radius: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.2px;
@@ -58,7 +60,7 @@
   color: #F0F0F2;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -155,7 +157,7 @@
     inset 0 1px 0 rgba(255,255,255,0.06);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -309,7 +311,7 @@
 }
 
 .panel-form-group .required {
-  color: #FF6B6B !important;
+  color: #E07356 !important;
 }
 
 .panel-form-group input,
@@ -344,8 +346,8 @@
 .panel-form-group textarea:focus {
   outline: none;
   background: rgba(255,255,255,0.1) !important;
-  border-color: rgba(255,255,255,0.2) !important;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2) !important;
+  border-color: rgba(224,115,86,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(224,115,86,0.15), 0 2px 8px rgba(0,0,0,0.2) !important;
 }
 
 /* Dropdowns — clean, no arrow clutter */
@@ -456,7 +458,8 @@
 
 .panel-source-select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
+  box-shadow: 0 0 0 3px rgba(224,115,86,0.15) !important;
+  border-color: rgba(224,115,86,0.5) !important;
 }
 
 /* Copy link button */
@@ -506,15 +509,15 @@
 .panel-save-button {
   width: 100%;
   padding: 13px 16px !important;
-  background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06)) !important;
+  background: #E07356 !important;
   color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(224,115,86,0.3) !important;
   border-radius: 12px !important;
   font-size: 14px !important;
   font-weight: 600;
   letter-spacing: -0.2px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(224,115,86,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   display: flex;
@@ -524,10 +527,10 @@
 }
 
 .panel-save-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)) !important;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  background: #D45E3F !important;
+  box-shadow: 0 6px 24px rgba(224,115,86,0.4), inset 0 1px 0 rgba(255,255,255,0.15) !important;
   transform: translateY(-1px);
-  border-color: rgba(255,255,255,0.18) !important;
+  border-color: rgba(224,115,86,0.5) !important;
 }
 
 .panel-save-button:active:not(:disabled) {
@@ -661,9 +664,9 @@
 
 .panel-save-another-btn {
   padding: 10px 14px !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(255,255,255,0.7) !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(224,115,86,0.1) !important;
+  color: #E07356 !important;
+  border: 1px solid rgba(224,115,86,0.2) !important;
   border-radius: 10px !important;
   font-size: 12px !important;
   font-weight: 500;
@@ -674,9 +677,9 @@
 }
 
 .panel-save-another-btn:hover {
-  background: rgba(255,255,255,0.1) !important;
+  background: rgba(224,115,86,0.18) !important;
   color: #FFFFFF !important;
-  border-color: rgba(255,255,255,0.14) !important;
+  border-color: rgba(224,115,86,0.35) !important;
 }
 
 /* ==================== PANEL SCROLLBAR ==================== */

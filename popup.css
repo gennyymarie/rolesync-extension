@@ -1,23 +1,28 @@
 /* ==========================================
-   JOB TRACKER - APPLE GLASS AESTHETIC
+   ROLESYNC - DARK THEME WITH CORAL ACCENTS
    ========================================== */
 
 /* CSS Variables */
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-bg-hover: rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-popup: 0 10px 40px rgba(0, 0, 0, 0.15);
-  --accent-blue: #4A90E2;
-  --accent-blue-hover: #357ABD;
-  --accent-green: #34C759;
-  --accent-red: #FF3B30;
-  --text-primary: #1D1D1F;
-  --text-secondary: #86868B;
-  --bg-input: #F5F5F7;
-  --bg-main: #FFFFFF;
+  --bg-main: #0C0C10;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-input: rgba(255, 255, 255, 0.06);
+  --bg-input-hover: rgba(255, 255, 255, 0.09);
+  --bg-input-focus: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-popup: 0 10px 40px rgba(0, 0, 0, 0.6);
+  --accent-coral: #E07356;
+  --accent-coral-hover: #D45E3F;
+  --accent-coral-light: rgba(224, 115, 86, 0.1);
+  --accent-coral-border: rgba(224, 115, 86, 0.5);
+  --accent-green: #4ADE80;
+  --accent-red: #FF6B6B;
+  --text-primary: rgba(255, 255, 255, 0.85);
+  --text-secondary: rgba(255, 255, 255, 0.4);
+  --text-muted: rgba(255, 255, 255, 0.25);
   --radius-large: 12px;
   --radius-medium: 8px;
   --radius-small: 6px;
@@ -32,7 +37,7 @@
 
 /* Main Container */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg-main);
   color: var(--text-primary);
   width: 340px;
@@ -51,10 +56,10 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .header-title,
@@ -62,16 +67,57 @@ body {
 h1 {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #FFFFFF;
   letter-spacing: -0.2px;
+}
+
+/* Coral accent on the emoji */
+.header-emoji {
+  margin-right: 6px;
+  color: var(--accent-coral);
 }
 
 .header-buttons,
 .header-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
+/* Header Save Button — dark with coral accent border */
+.header-save-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--accent-coral);
+  background: var(--accent-coral-light);
+  border: 1px solid rgba(224, 115, 86, 0.3);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-save-btn:hover {
+  background: rgba(224, 115, 86, 0.18);
+  border-color: var(--accent-coral-border);
+  transform: translateY(-1px);
+}
+
+.header-save-btn:active {
+  transform: translateY(0);
+}
+
+.header-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Icon Buttons */
 .header-btn,
 .icon-btn,
 .settings-btn,
@@ -79,7 +125,7 @@ h1 {
 .close-btn {
   width: 28px;
   height: 28px;
-  border: none;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-input);
   border-radius: var(--radius-small);
   cursor: pointer;
@@ -87,7 +133,6 @@ h1 {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-soft);
 }
 
 .header-btn:hover,
@@ -95,7 +140,8 @@ h1 {
 .settings-btn:hover,
 .minimize-btn:hover,
 .close-btn:hover {
-  background: #EBEBEB;
+  background: var(--bg-input-hover);
+  border-color: var(--border-hover);
   transform: scale(1.05);
 }
 
@@ -130,7 +176,7 @@ label,
 .input-label {
   display: block;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 6px;
   letter-spacing: 0.3px;
@@ -147,13 +193,22 @@ textarea,
   width: 100%;
   padding: 10px 12px;
   font-size: 14px;
+  font-weight: 500;
   font-family: inherit;
-  color: var(--text-primary);
+  color: #FFFFFF;
   background: var(--bg-input);
-  border: none;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+input[type="text"]:hover,
+input[type="url"]:hover,
+input[type="number"]:hover,
+input[type="date"]:hover,
+textarea:hover {
+  background: var(--bg-input-hover);
+  border-color: var(--border-hover);
 }
 
 input[type="text"]:focus,
@@ -164,13 +219,15 @@ textarea:focus,
 .text-input:focus,
 .input-field:focus {
   outline: none;
-  background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25), var(--shadow-soft);
+  background: var(--bg-input-focus);
+  border-color: var(--accent-coral-border);
+  box-shadow: 0 0 0 3px rgba(224, 115, 86, 0.15);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 /* Textareas */
@@ -187,27 +244,33 @@ select,
   width: 100%;
   padding: 10px 12px;
   font-size: 14px;
+  font-weight: 500;
   font-family: inherit;
-  color: var(--text-primary);
+  color: #FFFFFF;
   background: var(--bg-input);
-  border: none;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+select:hover {
+  background-color: var(--bg-input-hover);
+  border-color: var(--border-hover);
 }
 
 select:focus,
 .select-input:focus,
 .dropdown:focus {
   outline: none;
-  background-color: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25), var(--shadow-soft);
+  background-color: var(--bg-input-focus);
+  border-color: var(--accent-coral-border);
+  box-shadow: 0 0 0 3px rgba(224, 115, 86, 0.15);
 }
 
 /* Row layouts */
@@ -234,39 +297,36 @@ button,
   transition: all 0.2s ease;
 }
 
-/* Primary Button (Save) */
+/* Primary Button (Save) — generic, overridden by header-save-btn */
 .save-btn,
 .btn-primary,
-#saveBtn,
-button[type="submit"] {
+#saveBtn {
   width: 100%;
   padding: 12px 20px;
   font-size: 14px;
   font-weight: 600;
   color: #FFFFFF;
-  background: var(--accent-blue);
-  border: none;
+  background: var(--accent-coral);
+  border: 1px solid rgba(224, 115, 86, 0.3);
   border-radius: var(--radius-medium);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+  box-shadow: 0 4px 16px rgba(224, 115, 86, 0.3);
   transition: all 0.2s ease;
 }
 
 .save-btn:hover,
 .btn-primary:hover,
-#saveBtn:hover,
-button[type="submit"]:hover {
-  background: var(--accent-blue-hover);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+#saveBtn:hover {
+  background: var(--accent-coral-hover);
+  box-shadow: 0 6px 24px rgba(224, 115, 86, 0.4);
   transform: translateY(-1px);
 }
 
 .save-btn:active,
 .btn-primary:active,
-#saveBtn:active,
-button[type="submit"]:active {
+#saveBtn:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(74, 144, 226, 0.3);
+  box-shadow: 0 2px 8px rgba(224, 115, 86, 0.3);
 }
 
 /* Secondary Buttons */
@@ -274,16 +334,16 @@ button[type="submit"]:active {
 .autofill-btn {
   width: 100%;
   padding: 10px 16px;
-  color: var(--text-primary);
-  background: var(--bg-input);
-  border: none;
+  color: var(--accent-coral);
+  background: var(--accent-coral-light);
+  border: 1px solid rgba(224, 115, 86, 0.2);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
 }
 
 .btn-secondary:hover,
 .autofill-btn:hover {
-  background: #EBEBEB;
+  background: rgba(224, 115, 86, 0.18);
+  border-color: rgba(224, 115, 86, 0.4);
 }
 
 /* Source Bar */
@@ -294,6 +354,7 @@ button[type="submit"]:active {
   gap: 8px;
   padding: 10px 12px;
   background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
   margin-bottom: 12px;
 }
@@ -331,15 +392,15 @@ button[type="submit"]:active {
   align-items: center;
   justify-content: center;
   background: var(--bg-input);
-  border: none;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
   cursor: pointer;
 }
 
 .copy-btn:hover,
 .link-btn:hover {
-  background: #EBEBEB;
+  background: var(--bg-input-hover);
+  border-color: var(--border-hover);
 }
 
 .copy-btn svg,
@@ -360,7 +421,8 @@ button[type="submit"]:active {
   justify-content: center;
   gap: 8px;
   padding: 10px 16px;
-  background: rgba(52, 199, 89, 0.1);
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.12);
   border-radius: var(--radius-medium);
   margin-top: 12px;
 }
@@ -371,7 +433,7 @@ button[type="submit"]:active {
   height: 8px;
   background: var(--accent-green);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(52, 199, 89, 0.5);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
 }
 
 .status-text,
@@ -385,13 +447,14 @@ button[type="submit"]:active {
 /* Error State */
 .status-bar.error,
 .connection-status.error {
-  background: rgba(255, 59, 48, 0.1);
+  background: rgba(255, 107, 107, 0.08);
+  border-color: rgba(255, 107, 107, 0.12);
 }
 
 .status-bar.error .status-dot,
 .connection-status.error .connection-dot {
   background: var(--accent-red);
-  box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
 }
 
 .status-bar.error .status-text,
@@ -407,12 +470,14 @@ button[type="submit"]:active {
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 20px;
-  background: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   color: #FFFFFF;
   border-radius: var(--radius-medium);
   font-size: 13px;
   font-weight: 500;
   box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(20px);
   z-index: 1000;
   animation: slideUp 0.3s ease;
 }
@@ -433,16 +498,16 @@ button[type="submit"]:active {
 .save-success {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .success-icon {
   width: 48px;
   height: 48px;
-  background: rgba(52, 199, 89, 0.1);
+  background: rgba(74, 222, 128, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -461,7 +526,7 @@ button[type="submit"]:active {
 .success-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #FFFFFF;
   margin-bottom: 4px;
 }
 
@@ -475,10 +540,10 @@ button[type="submit"]:active {
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .no-job-icon,
@@ -515,7 +580,7 @@ button[type="submit"]:active {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: var(--text-primary);
+  color: #FFFFFF;
 }
 
 .settings-group {
@@ -535,16 +600,16 @@ button[type="submit"]:active {
   padding: 10px 12px;
   font-size: 13px;
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  color: var(--text-primary);
+  color: #FFFFFF;
   background: var(--bg-input);
-  border: none;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
 }
 
 .settings-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25), var(--shadow-soft);
+  border-color: var(--accent-coral-border);
+  box-shadow: 0 0 0 3px rgba(224, 115, 86, 0.15);
 }
 
 /* Scrollbar */
@@ -557,12 +622,12 @@ button[type="submit"]:active {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Loading State */
@@ -579,8 +644,8 @@ button[type="submit"]:active {
   content: '';
   width: 24px;
   height: 24px;
-  border: 2px solid var(--bg-input);
-  border-top-color: var(--accent-blue);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-coral);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -596,19 +661,14 @@ button[type="submit"]:active {
   position: relative;
 }
 
-/* Header Emoji */
-.header-emoji {
-  margin-right: 6px;
-}
-
 /* Warning Banner */
 .warning-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: rgba(74, 144, 226, 0.08);
-  border-bottom: 1px solid var(--glass-border);
+  background: var(--accent-coral-light);
+  border-bottom: 1px solid rgba(224, 115, 86, 0.2);
   font-size: 13px;
   color: var(--text-secondary);
 }
@@ -616,7 +676,7 @@ button[type="submit"]:active {
 .btn-link {
   background: none;
   border: none;
-  color: var(--accent-blue);
+  color: var(--accent-coral);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -632,10 +692,10 @@ button[type="submit"]:active {
 .state-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 24px;
-  text-align: center;
+  text-align: left;
 }
 
 .state-icon {
@@ -645,7 +705,7 @@ button[type="submit"]:active {
 .state-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #FFFFFF;
   margin-bottom: 6px;
 }
 
@@ -661,6 +721,7 @@ button[type="submit"]:active {
   padding: 16px;
   overflow-y: auto;
   max-height: 480px;
+  text-align: left;
 }
 
 /* Form Halves */
@@ -671,7 +732,7 @@ button[type="submit"]:active {
 
 /* Required Asterisk */
 .required {
-  color: var(--accent-red);
+  color: var(--accent-coral);
   font-weight: 400;
 }
 
@@ -688,29 +749,29 @@ button[type="submit"]:active {
   padding: 8px 32px 8px 10px;
   font-size: 13px;
   font-family: inherit;
-  color: var(--text-primary);
+  color: #FFFFFF;
   background: var(--bg-input);
-  border: none;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-soft);
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .source-select:focus {
   outline: none;
-  background-color: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25), var(--shadow-soft);
+  background-color: var(--bg-input-focus);
+  border-color: var(--accent-coral-border);
+  box-shadow: 0 0 0 3px rgba(224, 115, 86, 0.15);
 }
 
 .view-link {
   font-size: 13px;
   font-weight: 500;
-  color: var(--accent-blue);
+  color: var(--accent-coral);
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 0.2s ease;
@@ -724,38 +785,12 @@ button[type="submit"]:active {
 .error-message {
   padding: 10px 12px;
   margin-bottom: 12px;
-  background: rgba(255, 59, 48, 0.08);
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.12);
   border-radius: var(--radius-medium);
   font-size: 13px;
   color: var(--accent-red);
   line-height: 1.4;
-}
-
-/* Save Button */
-.save-button {
-  width: 100%;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  color: #FFFFFF;
-  background: var(--accent-blue);
-  border: none;
-  border-radius: var(--radius-medium);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-  transition: all 0.2s ease;
-}
-
-.save-button:hover {
-  background: var(--accent-blue-hover);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-  transform: translateY(-1px);
-}
-
-.save-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(74, 144, 226, 0.3);
 }
 
 .btn-text {
@@ -772,8 +807,8 @@ button[type="submit"]:active {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
+  border: 2px solid rgba(224, 115, 86, 0.3);
+  border-top-color: var(--accent-coral);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -785,25 +820,26 @@ button[type="submit"]:active {
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
-  color: var(--accent-blue);
-  background: rgba(74, 144, 226, 0.1);
-  border: none;
+  color: var(--accent-coral);
+  background: var(--accent-coral-light);
+  border: 1px solid rgba(224, 115, 86, 0.2);
   border-radius: var(--radius-medium);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(74, 144, 226, 0.16);
+  background: rgba(224, 115, 86, 0.18);
+  border-color: rgba(224, 115, 86, 0.4);
 }
 
 /* Footer */
 .popup-footer {
   padding: 10px 16px;
-  border-top: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .status {
@@ -817,7 +853,7 @@ button[type="submit"]:active {
   height: 7px;
   background: var(--accent-green);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(52, 199, 89, 0.4);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
 }
 
 .status #status-text {

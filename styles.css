@@ -1,10 +1,12 @@
-/* Job Tracker Extension - Dark Glass / Mirror Aesthetic */
+/* RoleSync Extension - Dark Glass / Mirror Aesthetic */
 /* Bold, editorial, frosted glass — inspired by modern UI trends */
 
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
 /* ==================== FLOATING SAVE BUTTON ==================== */
-.job-tracker-floating-btn {
+.rolesync-floating-btn {
   position: fixed;
-  bottom: 24px;
+  top: 24px;
   right: 24px;
   z-index: 2147483647;
   display: flex;
@@ -15,7 +17,7 @@
   color: #FFFFFF !important;
   border: 1px solid rgba(255,255,255,0.12) !important;
   border-radius: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.2px;
@@ -26,29 +28,29 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.job-tracker-floating-btn:hover {
+.rolesync-floating-btn:hover {
   background: linear-gradient(135deg, rgba(40,40,50,0.95), rgba(24,24,30,0.98)) !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12);
   transform: translateY(-3px);
   border-color: rgba(255,255,255,0.18) !important;
 }
 
-.job-tracker-floating-btn:active {
+.rolesync-floating-btn:active {
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-.job-tracker-floating-btn svg {
+.rolesync-floating-btn svg {
   flex-shrink: 0;
   stroke: #FFFFFF;
 }
 
-.job-tracker-floating-btn span {
+.rolesync-floating-btn span {
   white-space: nowrap;
 }
 
 /* ==================== TOAST NOTIFICATION ==================== */
-.job-tracker-toast {
+.rolesync-toast {
   position: fixed;
   bottom: 100px;
   right: 24px;
@@ -58,7 +60,7 @@
   color: #F0F0F2;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -70,12 +72,12 @@
   gap: 10px;
 }
 
-.job-tracker-toast.success {
+.rolesync-toast.success {
   border-color: rgba(52, 199, 89, 0.25);
   color: #4ADE80;
 }
 
-.job-tracker-toast.success::before {
+.rolesync-toast.success::before {
   content: '✓';
   display: inline-flex;
   align-items: center;
@@ -90,12 +92,12 @@
   box-shadow: 0 2px 8px rgba(52,199,89,0.4);
 }
 
-.job-tracker-toast.error {
+.rolesync-toast.error {
   border-color: rgba(255, 59, 48, 0.25);
   color: #FF6B6B;
 }
 
-.job-tracker-toast.error::before {
+.rolesync-toast.error::before {
   content: '✕';
   display: inline-flex;
   align-items: center;
@@ -110,7 +112,7 @@
   box-shadow: 0 2px 8px rgba(255,59,48,0.4);
 }
 
-.job-tracker-toast.fade-out {
+.rolesync-toast.fade-out {
   animation: toastSlideOut 0.25s ease-in forwards;
 }
 
@@ -137,7 +139,7 @@
 }
 
 /* ==================== FLOATING PANEL ==================== */
-.job-tracker-panel {
+.rolesync-panel {
   position: fixed;
   z-index: 2147483647;
   width: 340px !important;
@@ -155,18 +157,18 @@
     inset 0 1px 0 rgba(255,255,255,0.06);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   resize: both;
 }
 
-.job-tracker-panel.hidden {
+.rolesync-panel.hidden {
   display: none !important;
 }
 
-.job-tracker-panel.dragging {
+.rolesync-panel.dragging {
   opacity: 0.92;
   cursor: grabbing;
 }
@@ -309,7 +311,7 @@
 }
 
 .panel-form-group .required {
-  color: #FF6B6B !important;
+  color: #E07356 !important;
 }
 
 .panel-form-group input,
@@ -344,8 +346,8 @@
 .panel-form-group textarea:focus {
   outline: none;
   background: rgba(255,255,255,0.1) !important;
-  border-color: rgba(255,255,255,0.2) !important;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2) !important;
+  border-color: rgba(224,115,86,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(224,115,86,0.15), 0 2px 8px rgba(0,0,0,0.2) !important;
 }
 
 /* Dropdowns — clean, no arrow clutter */
@@ -456,7 +458,8 @@
 
 .panel-source-select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.06) !important;
+  box-shadow: 0 0 0 3px rgba(224,115,86,0.15) !important;
+  border-color: rgba(224,115,86,0.5) !important;
 }
 
 /* Copy link button */
@@ -506,15 +509,15 @@
 .panel-save-button {
   width: 100%;
   padding: 13px 16px !important;
-  background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06)) !important;
+  background: #E07356 !important;
   color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(224,115,86,0.3) !important;
   border-radius: 12px !important;
   font-size: 14px !important;
   font-weight: 600;
   letter-spacing: -0.2px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(224,115,86,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   display: flex;
@@ -524,10 +527,10 @@
 }
 
 .panel-save-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)) !important;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  background: #D45E3F !important;
+  box-shadow: 0 6px 24px rgba(224,115,86,0.4), inset 0 1px 0 rgba(255,255,255,0.15) !important;
   transform: translateY(-1px);
-  border-color: rgba(255,255,255,0.18) !important;
+  border-color: rgba(224,115,86,0.5) !important;
 }
 
 .panel-save-button:active:not(:disabled) {
@@ -661,9 +664,9 @@
 
 .panel-save-another-btn {
   padding: 10px 14px !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(255,255,255,0.7) !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(224,115,86,0.1) !important;
+  color: #E07356 !important;
+  border: 1px solid rgba(224,115,86,0.2) !important;
   border-radius: 10px !important;
   font-size: 12px !important;
   font-weight: 500;
@@ -674,9 +677,9 @@
 }
 
 .panel-save-another-btn:hover {
-  background: rgba(255,255,255,0.1) !important;
+  background: rgba(224,115,86,0.18) !important;
   color: #FFFFFF !important;
-  border-color: rgba(255,255,255,0.14) !important;
+  border-color: rgba(224,115,86,0.35) !important;
 }
 
 /* ==================== PANEL SCROLLBAR ==================== */
@@ -698,13 +701,13 @@
 }
 
 /* ==================== ENSURE STYLES DON'T GET OVERRIDDEN ==================== */
-.job-tracker-panel *,
-.job-tracker-panel *::before,
-.job-tracker-panel *::after,
-.job-tracker-floating-btn,
-.job-tracker-floating-btn *,
-.job-tracker-toast,
-.job-tracker-toast * {
+.rolesync-panel *,
+.rolesync-panel *::before,
+.rolesync-panel *::after,
+.rolesync-floating-btn,
+.rolesync-floating-btn *,
+.rolesync-toast,
+.rolesync-toast * {
   box-sizing: border-box;
   line-height: 1.4;
 }

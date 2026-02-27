@@ -1,4 +1,4 @@
-// Content script for Job Tracker extension
+// Content script for RoleSync extension
 // Detects job sites and extracts job posting data
 
 (function() {
@@ -7,6 +7,7 @@
   // Store extracted data for popup retrieval
   let extractedJobData = null;
   let currentSite = null;
+  let isReady = false;
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
@@ -17,21 +18,31 @@
 
   function init() {
     currentSite = detectSite();
-    console.log('Job Tracker: Initialized on', window.location.hostname, '- Detected site:', currentSite);
+    console.log('RoleSync: Initialized on', window.location.hostname, '- Detected site:', currentSite);
 
     if (currentSite) {
       // Wait for dynamic content to load (especially for SPAs like LinkedIn)
       waitForJobContent().then(() => {
         extractedJobData = extractJobData();
-        console.log('Job Tracker: Final extracted data:', extractedJobData);
+        console.log('RoleSync: Final extracted data:', extractedJobData);
         injectSaveButton();
         storeDataForPopup();
+        isReady = true;
       });
 
       // Re-extract when URL changes (SPA navigation)
       observeUrlChanges();
     } else {
-      console.log('Job Tracker: No job site detected');
+      // Even on non-job pages, mark as ready so the panel can open
+      // (it will just show empty fields for manual entry)
+      console.log('RoleSync: No job site detected, attempting generic extraction');
+      extractedJobData = extractGeneric();
+      extractedJobData.source = 'Other';
+      extractedJobData.link = cleanUrl(window.location.href);
+      extractedJobData.status = 'Not Applied';
+      extractedJobData = normalizeJobData(extractedJobData);
+      storeDataForPopup();
+      isReady = true;
     }
   }
 
@@ -41,7 +52,7 @@
     const hostname = window.location.hostname;
     const pathname = window.location.pathname;
 
-    if (hostname.includes('linkedin.com') && pathname.includes('/jobs/')) {
+    if (hostname.includes('linkedin.com') && (pathname.includes('/jobs/') || pathname.includes('/job/'))) {
       return 'linkedin';
     }
     if (hostname.includes('joinhandshake.com')) {
@@ -70,12 +81,12 @@
 
   function waitForJobContent() {
     return new Promise((resolve) => {
-      console.log('Job Tracker: Waiting for job content on', currentSite);
+      console.log('RoleSync: Waiting for job content on', currentSite);
 
       // Site-specific selectors to wait for
       const selectors = {
-        linkedin: '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, .topcard__title, h1.t-24, .job-view-layout h1',
-        handshake: '[data-hook="job-title"], h1',
+        linkedin: '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, .topcard__title, h1.t-24, .job-view-layout h1, h1[class*="job"], h1',
+        handshake: '[data-hook="job-title"], h1[class*="job"], h1[class*="Job"], h1',
         ziprecruiter: 'h1.job_title, .job_header h1, h1',
         generic: 'h1'
       };
@@ -84,7 +95,7 @@
       const element = document.querySelector(selector);
 
       if (element && element.textContent.trim()) {
-        console.log('Job Tracker: Content found immediately');
+        console.log('RoleSync: Content found immediately');
         resolve();
         return;
       }
@@ -93,7 +104,7 @@
       const observer = new MutationObserver((mutations, obs) => {
         const el = document.querySelector(selector);
         if (el && el.textContent.trim()) {
-          console.log('Job Tracker: Content found via observer');
+          console.log('RoleSync: Content found via observer');
           obs.disconnect();
           resolve();
         }
@@ -106,7 +117,7 @@
 
       // Timeout fallback - increased to 8 seconds for slow-loading LinkedIn pages
       setTimeout(() => {
-        console.log('Job Tracker: Timeout reached, proceeding anyway');
+        console.log('RoleSync: Timeout reached, proceeding anyway');
         observer.disconnect();
         resolve();
       }, 8000);
@@ -147,43 +158,44 @@
   function extractLinkedIn() {
     const data = {};
 
-    console.log('Job Tracker: Extracting LinkedIn data...');
+    console.log('RoleSync: Extracting LinkedIn data...');
 
-    // Job Title - try multiple selectors (updated for 2024/2025 LinkedIn)
+    // Job Title - try multiple selectors (updated for current LinkedIn DOM)
     const titleSelectors = [
-      // New LinkedIn selectors
       '.job-details-jobs-unified-top-card__job-title h1',
       '.job-details-jobs-unified-top-card__job-title a',
       '.job-details-jobs-unified-top-card__job-title',
       '.jobs-unified-top-card__job-title h1',
       '.jobs-unified-top-card__job-title a',
       '.jobs-unified-top-card__job-title',
-      // Older selectors
       'h1.t-24.t-bold.inline',
       'h1.t-24.t-bold',
       '.jobs-details-top-card__job-title',
       '.topcard__title',
-      // Fallback - any h1 in the job details area
+      '.job-details h1',
       '.jobs-details h1',
-      '.job-view-layout h1'
+      '.job-view-layout h1',
+      'h1[class*="job"]',
+      'h1'
     ];
     data.jobTitle = getFirstMatch(titleSelectors);
-    console.log('Job Tracker: Found title:', data.jobTitle);
+    console.log('RoleSync: Found title:', data.jobTitle);
 
     // Company - updated selectors
     const companySelectors = [
       '.job-details-jobs-unified-top-card__company-name a',
-      '.job-details-jobs-unified-top-card__primary-description-container a',
       '.job-details-jobs-unified-top-card__company-name',
+      '.job-details-jobs-unified-top-card__primary-description-container a',
       '.jobs-unified-top-card__company-name a',
       '.jobs-unified-top-card__company-name',
       '.jobs-details-top-card__company-url',
       '.topcard__org-name-link',
       '.jobs-company__name a',
-      'a[data-tracking-control-name="public_jobs_topcard-org-name"]'
+      'a[data-tracking-control-name="public_jobs_topcard-org-name"]',
+      'a[data-tracking-control-name="public_jobs_topcard_org-name"]'
     ];
     data.company = getFirstMatch(companySelectors);
-    console.log('Job Tracker: Found company:', data.company);
+    console.log('RoleSync: Found company:', data.company);
 
     // Location - updated selectors
     const locationSelectors = [
@@ -193,48 +205,114 @@
       '.jobs-unified-top-card__subtitle-primary-grouping .tvm__text',
       '.jobs-details-top-card__bullet',
       '.topcard__flavor--bullet',
-      '.jobs-company__location'
+      '.jobs-company__location',
+      '.job-details-jobs-unified-top-card__primary-description-container span.tvm__text'
     ];
     data.location = getFirstMatch(locationSelectors);
-    console.log('Job Tracker: Found location:', data.location);
+    console.log('RoleSync: Found location:', data.location);
 
-    // Job insights (contains job type, work model, salary) - updated selectors
+    // --- Job insights: jobType, workModel, salary ---
+    // LinkedIn packs these into insight elements, often combining
+    // "Full-time · Remote" or "Full-time · Hybrid" in one span.
     const insightSelectors = [
       '.job-details-jobs-unified-top-card__job-insight',
       '.job-details-jobs-unified-top-card__job-insight-view-model-secondary',
       '.jobs-unified-top-card__job-insight',
+      '.job-details-preferences-and-skills .job-details-preferences-and-skills__pill',
       '.jobs-description-content__text li',
-      '.description__job-criteria-item'
+      '.description__job-criteria-item',
+      // Individual spans inside insight containers
+      '.job-details-jobs-unified-top-card__job-insight span',
+      '.jobs-unified-top-card__job-insight span'
     ];
     const insights = document.querySelectorAll(insightSelectors.join(', '));
-    console.log('Job Tracker: Found insights:', insights.length);
+    console.log('RoleSync: Found insights:', insights.length);
 
     insights.forEach(insight => {
       const text = insight.textContent.toLowerCase();
-      if (text.includes('remote') || text.includes('hybrid') || text.includes('on-site') || text.includes('onsite')) {
-        data.workModel = extractWorkModel(insight.textContent);
+
+      // Work model detection
+      if (!data.workModel) {
+        if (text.includes('remote') || text.includes('hybrid') || text.includes('on-site') || text.includes('onsite') || text.includes('in-office') || text.includes('in office')) {
+          data.workModel = extractWorkModel(insight.textContent);
+        }
       }
-      if (text.includes('full-time') || text.includes('part-time') || text.includes('contract') || text.includes('internship') || text.includes('temporary')) {
-        data.jobType = extractJobType(insight.textContent);
+
+      // Job type detection
+      if (!data.jobType) {
+        if (text.includes('full-time') || text.includes('full time') || text.includes('part-time') || text.includes('part time') || text.includes('contract') || text.includes('internship') || text.includes('intern ') || text.includes('temporary') || text.includes('freelance') || text.includes('volunteer')) {
+          data.jobType = extractJobType(insight.textContent);
+        }
       }
-      if (text.includes('$') || text.includes('yr') || text.includes('/hr') || text.includes('salary') || text.includes('compensation')) {
-        data.salary = insight.textContent.trim();
+
+      // Salary detection
+      if (!data.salary) {
+        if (text.includes('$') || text.includes('€') || text.includes('£') || text.includes('/yr') || text.includes('/hr') || text.includes('/year') || text.includes('/hour') || text.includes('salary') || text.includes('compensation') || text.includes('per year') || text.includes('per hour') || text.includes('annually')) {
+          data.salary = cleanText(insight.textContent);
+        }
       }
     });
 
-    // Also try to get job type from the primary description area
-    if (!data.jobType) {
-      const primaryDesc = document.querySelector('.job-details-jobs-unified-top-card__primary-description-container');
-      if (primaryDesc) {
-        const text = primaryDesc.textContent;
-        data.jobType = extractJobType(text);
-        if (!data.workModel) {
-          data.workModel = extractWorkModel(text);
+    // Try the primary description area (contains "City · Type · Model" line)
+    if (!data.jobType || !data.workModel) {
+      const primaryDescSelectors = [
+        '.job-details-jobs-unified-top-card__primary-description-container',
+        '.job-details-jobs-unified-top-card__primary-description',
+        '.jobs-unified-top-card__subtitle-primary-grouping'
+      ];
+      for (const sel of primaryDescSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const text = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(text);
+          if (!data.workModel) data.workModel = extractWorkModel(text);
+          break;
         }
       }
     }
 
-    console.log('Job Tracker: Extracted data:', data);
+    // Try the job criteria section (older LinkedIn layout)
+    if (!data.jobType || !data.workModel) {
+      const criteriaItems = document.querySelectorAll('.description__job-criteria-item');
+      criteriaItems.forEach(item => {
+        const header = item.querySelector('.description__job-criteria-subheader');
+        const value = item.querySelector('.description__job-criteria-text');
+        if (header && value) {
+          const headerText = header.textContent.toLowerCase().trim();
+          const valueText = value.textContent.trim();
+          if (headerText.includes('employment type') && !data.jobType) {
+            data.jobType = extractJobType(valueText);
+          }
+          if (headerText.includes('job function') || headerText.includes('workplace type')) {
+            if (!data.workModel) data.workModel = extractWorkModel(valueText);
+          }
+        }
+      });
+    }
+
+    // Fallback: scan the full job description body
+    if (!data.jobType || !data.workModel || !data.salary) {
+      const descSelectors = [
+        '.jobs-description-content__text',
+        '.jobs-description__content',
+        '.job-details-jobs-unified-top-card__job-description',
+        '#job-details',
+        '.jobs-box__html-content',
+        'article'
+      ];
+      for (const sel of descSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const descText = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(descText);
+          if (!data.workModel) data.workModel = extractWorkModel(descText);
+          if (!data.salary) data.salary = extractSalaryFromText(descText);
+          break;
+        }
+      }
+    }
+
+    console.log('RoleSync: Extracted data:', data);
     return data;
   }
 
@@ -243,68 +321,222 @@
   function extractHandshake() {
     const data = {};
 
+    console.log('RoleSync: Extracting Handshake data...');
+
     // Try JSON-LD first
     const jsonLdData = extractJsonLd();
     if (jsonLdData.jobTitle) {
       Object.assign(data, jsonLdData);
+      console.log('RoleSync: Got JSON-LD data:', jsonLdData);
     }
 
-    // Job Title
+    // Job Title - h1 is usually the job title on Handshake
     if (!data.jobTitle) {
       const titleSelectors = [
         '[data-hook="job-title"]',
         'h1[class*="JobTitle"]',
-        '.style__job-title',
+        'h1[class*="job-title"]',
+        '[class*="style__job-title"]',
         'h1'
       ];
       data.jobTitle = getFirstMatch(titleSelectors);
+      console.log('RoleSync: Found title:', data.jobTitle);
     }
 
-    // Company
+    // Company - try employer links and nearby elements
     if (!data.company) {
       const companySelectors = [
         '[data-hook="employer-name"]',
         'a[href*="/employers/"]',
-        '[class*="EmployerName"]'
+        'a[href*="/employer/"]',
+        '[class*="EmployerName"]',
+        '[class*="employer-name"]',
+        '[class*="company-name"]',
+        '[data-testid*="employer"]',
+        '[data-testid*="company"]',
+        '[aria-label*="employer"]',
+        '[aria-label*="company"]'
       ];
       data.company = getFirstMatch(companySelectors);
+
+      // Fallback: look for a link near the h1 that goes to /employers/
+      if (!data.company) {
+        const h1 = document.querySelector('h1');
+        if (h1) {
+          // Search siblings and parent's children for employer links
+          const container = h1.closest('div') || h1.parentElement;
+          if (container) {
+            const employerLink = container.querySelector('a[href*="/employers/"]') ||
+                                 container.querySelector('a[href*="/employer/"]');
+            if (employerLink) {
+              data.company = cleanText(employerLink.textContent);
+            }
+          }
+          // Also check the element right after h1
+          if (!data.company) {
+            let sibling = h1.nextElementSibling;
+            while (sibling && !data.company) {
+              const link = sibling.querySelector ? sibling.querySelector('a') : null;
+              if (link && link.textContent.trim().length > 1 && link.textContent.trim().length < 80) {
+                data.company = cleanText(link.textContent);
+              }
+              sibling = sibling.nextElementSibling;
+            }
+          }
+        }
+      }
+      console.log('RoleSync: Found company:', data.company);
     }
 
-    // Location
-    const locationSelectors = [
-      '[data-hook="job-location"]',
-      '[class*="JobLocation"]',
-      '[class*="location"]'
-    ];
-    data.location = data.location || getFirstMatch(locationSelectors);
+    // Scan the page for label-value pairs (Handshake uses structured detail sections)
+    // This catches salary, location, job type, work model, deadline, etc.
+    const detailsFromPage = extractHandshakeDetails();
+    console.log('RoleSync: Extracted detail pairs:', detailsFromPage);
 
-    // Deadline
-    const deadlineSelectors = [
-      '[data-hook="apply-deadline"]',
-      '[class*="deadline"]',
-      'time[datetime]'
-    ];
-    const deadlineEl = document.querySelector(deadlineSelectors.join(', '));
-    if (deadlineEl) {
-      data.deadline = deadlineEl.getAttribute('datetime') || deadlineEl.textContent.trim();
+    // Location
+    if (!data.location) {
+      data.location = detailsFromPage.location || getFirstMatch([
+        '[data-hook="job-location"]',
+        '[class*="JobLocation"]',
+        '[class*="job-location"]',
+        '[class*="location"]',
+        '[data-testid*="location"]'
+      ]);
+    }
+
+    // Salary
+    if (!data.salary) {
+      data.salary = detailsFromPage.salary || getFirstMatch([
+        '[data-hook="compensation"]',
+        '[class*="salary"]',
+        '[class*="compensation"]',
+        '[class*="pay"]'
+      ]);
     }
 
     // Job Type
-    const jobTypeSelectors = [
-      '[data-hook="job-type"]',
-      '[class*="employment-type"]'
-    ];
-    data.jobType = data.jobType || getFirstMatch(jobTypeSelectors);
+    if (!data.jobType) {
+      data.jobType = detailsFromPage.jobType || getFirstMatch([
+        '[data-hook="job-type"]',
+        '[class*="employment-type"]',
+        '[class*="job-type"]'
+      ]);
+    }
 
-    // Salary
-    const salarySelectors = [
-      '[data-hook="compensation"]',
-      '[class*="salary"]',
-      '[class*="compensation"]'
-    ];
-    data.salary = data.salary || getFirstMatch(salarySelectors);
+    // Work Model (remote/hybrid/on-site)
+    if (!data.workModel) {
+      data.workModel = detailsFromPage.workModel;
+    }
 
+    // Deadline
+    if (!data.deadline) {
+      data.deadline = detailsFromPage.deadline;
+      if (!data.deadline) {
+        const deadlineEl = document.querySelector('[data-hook="apply-deadline"], [class*="deadline"], time[datetime]');
+        if (deadlineEl) {
+          data.deadline = deadlineEl.getAttribute('datetime') || deadlineEl.textContent.trim();
+        }
+      }
+    }
+
+    // Final fallback: scan the whole page text for salary and job type
+    if (!data.salary || !data.jobType || !data.workModel) {
+      const bodyText = document.body.innerText || '';
+      if (!data.salary) data.salary = extractSalaryFromText(bodyText);
+      if (!data.jobType) data.jobType = extractJobType(bodyText);
+      if (!data.workModel) data.workModel = extractWorkModel(bodyText);
+    }
+
+    console.log('RoleSync: Final Handshake data:', data);
     return data;
+  }
+
+  // Scan the Handshake page for structured label-value detail pairs
+  // Handshake displays job details as label/value pairs in various formats
+  function extractHandshakeDetails() {
+    const result = {};
+    const bodyText = document.body.innerText || '';
+    const lines = bodyText.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // Strategy 1: Look for known labels followed by values in the text
+    const labelPatterns = [
+      { labels: ['salary', 'compensation', 'pay'], field: 'salary' },
+      { labels: ['location', 'locations'], field: 'location' },
+      { labels: ['job type', 'employment type', 'position type'], field: 'jobType' },
+      { labels: ['work model', 'workplace', 'workplace type', 'work location'], field: 'workModel' },
+      { labels: ['deadline', 'apply by', 'application deadline', 'apply before'], field: 'deadline' }
+    ];
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineLower = lines[i].toLowerCase();
+
+      for (const pattern of labelPatterns) {
+        if (result[pattern.field]) continue;
+
+        const isLabelLine = pattern.labels.some(label => {
+          // The line is the label itself or starts with it
+          return lineLower === label ||
+                 lineLower.startsWith(label + ':') ||
+                 lineLower.startsWith(label + ' ');
+        });
+
+        if (isLabelLine) {
+          // Check if value is on the same line after a colon
+          const colonIdx = lines[i].indexOf(':');
+          if (colonIdx !== -1 && colonIdx < lines[i].length - 1) {
+            result[pattern.field] = lines[i].substring(colonIdx + 1).trim();
+          } else if (i + 1 < lines.length) {
+            // Value is on the next line
+            result[pattern.field] = lines[i + 1];
+          }
+        }
+      }
+    }
+
+    // Strategy 2: Look for salary patterns anywhere in the text
+    if (!result.salary) {
+      const salaryMatch = bodyText.match(/\$[\d,]+(?:\.\d{2})?\s*[-–—\/]\s*\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|Hour|Year))?/i) ||
+                          bodyText.match(/\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|Hour|Year))/i);
+      if (salaryMatch) {
+        result.salary = salaryMatch[0].trim();
+      }
+    }
+
+    // Strategy 3: Detect work model from location text or any mention
+    if (!result.workModel) {
+      // Check if the location field itself mentions hybrid/remote
+      const locText = result.location || '';
+      const workModel = extractWorkModel(locText);
+      if (workModel) {
+        result.workModel = workModel;
+      }
+    }
+
+    // Strategy 4: Normalize job type
+    if (result.jobType) {
+      const normalized = extractJobType(result.jobType);
+      if (normalized) result.jobType = normalized;
+    }
+
+    // Strategy 5: Look for all elements with text content matching patterns
+    // This helps with React apps where data-* attributes are absent
+    if (!result.salary || !result.location || !result.company) {
+      const allElements = document.querySelectorAll('span, p, div, a, li, dd, td');
+      for (const el of allElements) {
+        // Skip very large elements (containers)
+        if (el.children.length > 3) continue;
+        const text = el.textContent.trim();
+        if (text.length > 200 || text.length < 2) continue;
+
+        // Salary detection
+        if (!result.salary && /\$\d/.test(text) && (text.includes('/') || text.includes('hr') || text.includes('yr') || text.includes('hour') || text.includes('year') || text.includes('–') || text.includes('-'))) {
+          const salaryCandidate = extractSalaryFromText(text);
+          if (salaryCandidate) result.salary = salaryCandidate;
+        }
+      }
+    }
+
+    return result;
   }
 
   // ==================== ZIPRECRUITER EXTRACTION ====================
@@ -379,19 +611,23 @@
       Object.assign(data, jsonLdData);
     }
 
-    // Priority 2: Common patterns
+    // Priority 2: Common patterns for job title
     if (!data.jobTitle) {
       const titleCandidates = [
         document.querySelector('h1'),
         document.querySelector('[class*="job-title"]'),
+        document.querySelector('[class*="job_title"]'),
+        document.querySelector('[class*="jobTitle"]'),
         document.querySelector('[class*="position-title"]'),
-        document.querySelector('[data-automation*="title"]')
+        document.querySelector('[class*="posting-title"]'),
+        document.querySelector('[data-automation*="title"]'),
+        document.querySelector('[data-testid*="title"]')
       ];
       const titleEl = titleCandidates.find(el => el && el.textContent.trim());
       data.jobTitle = titleEl ? titleEl.textContent.trim() : '';
     }
 
-    // Priority 3: Meta tags
+    // Priority 3: Meta tags for title
     if (!data.jobTitle) {
       data.jobTitle = document.querySelector('meta[property="og:title"]')?.content || '';
     }
@@ -399,14 +635,88 @@
     // Company from URL patterns or page content
     if (!data.company) {
       data.company = extractCompanyFromUrl() ||
-        document.querySelector('[class*="company"]')?.textContent.trim() ||
+        getFirstMatch([
+          '[class*="company-name"]',
+          '[class*="companyName"]',
+          '[class*="company_name"]',
+          '[class*="employer"]',
+          '[data-automation*="company"]',
+          '[data-testid*="company"]'
+        ]) ||
         document.querySelector('meta[property="og:site_name"]')?.content || '';
     }
 
     // Location
     if (!data.location) {
-      const locationEl = document.querySelector('[class*="location"], [data-automation*="location"]');
-      data.location = locationEl ? locationEl.textContent.trim() : '';
+      data.location = getFirstMatch([
+        '[class*="job-location"]',
+        '[class*="jobLocation"]',
+        '[class*="job_location"]',
+        '[class*="location"]',
+        '[data-automation*="location"]',
+        '[data-testid*="location"]'
+      ]);
+    }
+
+    // Job type from structured elements
+    if (!data.jobType) {
+      data.jobType = getFirstMatch([
+        '[class*="employment-type"]',
+        '[class*="employmentType"]',
+        '[class*="employment_type"]',
+        '[class*="job-type"]',
+        '[class*="jobType"]',
+        '[class*="job_type"]',
+        '[data-automation*="employment"]',
+        '[data-testid*="job-type"]'
+      ]);
+    }
+
+    // Work model from structured elements
+    if (!data.workModel) {
+      data.workModel = getFirstMatch([
+        '[class*="workplace-type"]',
+        '[class*="workplaceType"]',
+        '[class*="work-model"]',
+        '[class*="workModel"]',
+        '[class*="remote"]'
+      ]);
+    }
+
+    // Salary from structured elements
+    if (!data.salary) {
+      data.salary = getFirstMatch([
+        '[class*="salary"]',
+        '[class*="compensation"]',
+        '[class*="pay-range"]',
+        '[class*="payRange"]',
+        '[data-automation*="salary"]',
+        '[data-testid*="salary"]'
+      ]);
+    }
+
+    // Fallback: scan full page body for missing fields
+    if (!data.jobType || !data.workModel || !data.salary) {
+      const bodySelectors = [
+        '.job-description',
+        '[class*="job-description"]',
+        '[class*="jobDescription"]',
+        '[class*="posting-description"]',
+        '[class*="description"]',
+        'article',
+        'main',
+        '.content'
+      ];
+      for (const sel of bodySelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.textContent.length > 100) {
+          const descText = el.textContent;
+          if (!data.jobType) data.jobType = extractJobType(descText);
+          if (!data.workModel) data.workModel = extractWorkModel(descText);
+          if (!data.salary) data.salary = extractSalaryFromText(descText);
+          break;
+        }
+      }
     }
 
     return data;
@@ -439,7 +749,14 @@
           data.location = extractLocationFromJsonLd(jobPosting.jobLocation);
           data.salary = formatSalaryFromJsonLd(jobPosting.baseSalary);
           data.deadline = jobPosting.validThrough || '';
-          data.jobType = jobPosting.employmentType || '';
+          const empType = jobPosting.employmentType;
+          data.jobType = Array.isArray(empType) ? empType.join(', ') : (empType || '');
+          // JSON-LD jobLocationType indicates remote/telecommute
+          const locType = jobPosting.jobLocationType;
+          if (locType) {
+            const locTypeStr = Array.isArray(locType) ? locType.join(', ') : locType;
+            data.workModel = locTypeStr;
+          }
           break;
         }
       } catch (e) {
@@ -537,21 +854,43 @@
 
   function extractWorkModel(text) {
     if (!text) return '';
-    const lower = text.toLowerCase();
-    if (lower.includes('remote')) return 'Remote';
+    const lower = text.toLowerCase().replace(/[_\-]/g, ' ');
+    // Order matters: check "hybrid" before "remote" since some listings say "remote/hybrid"
     if (lower.includes('hybrid')) return 'Hybrid';
-    if (lower.includes('on-site') || lower.includes('onsite') || lower.includes('in-office')) return 'On-site';
+    if (lower.includes('remote') || lower.includes('telecommute') || lower.includes('work from home') || lower.includes('wfh')) return 'Remote';
+    if (lower.includes('on site') || lower.includes('onsite') || lower.includes('in office') || lower.includes('in person')) return 'On-site';
     return '';
   }
 
   function extractJobType(text) {
     if (!text) return '';
-    const lower = text.toLowerCase();
-    if (lower.includes('full-time') || lower.includes('full time')) return 'Full-time';
-    if (lower.includes('part-time') || lower.includes('part time')) return 'Part-time';
-    if (lower.includes('contract')) return 'Contract';
-    if (lower.includes('internship') || lower.includes('intern')) return 'Internship';
-    if (lower.includes('temporary')) return 'Temporary';
+    // Normalize underscores/hyphens and lowercase for matching
+    const lower = text.toLowerCase().replace(/[_\-]/g, ' ');
+    // Check most specific patterns first to avoid false positives
+    // (e.g., "intern" matching inside "international")
+    if (lower.includes('full time') || lower.includes('fulltime')) return 'Full-time';
+    if (lower.includes('part time') || lower.includes('parttime')) return 'Part-time';
+    if (lower.includes('internship') || /\bintern\b/.test(lower)) return 'Internship';
+    if (lower.includes('contract') || lower.includes('contractor') || lower.includes('freelance')) return 'Contract';
+    if (lower.includes('temporary') || lower.includes('temp ') || lower.includes('seasonal')) return 'Temporary';
+    if (lower.includes('volunteer')) return 'Volunteer';
+    return '';
+  }
+
+  function extractSalaryFromText(text) {
+    if (!text) return '';
+    // Match common salary patterns: $80,000 - $100,000, $50/hr, $80K-$100K, etc.
+    const patterns = [
+      /\$[\d,]+(?:\.\d{2})?\s*[-–—to]+\s*\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|annually|per\s+year|per\s+hour|a\s+year))?/i,
+      /\$[\d,]+(?:\.\d{2})?\s*(?:\/?\s*(?:yr|year|hr|hour|annually|per\s+year|per\s+hour|a\s+year))/i,
+      /\$\d+[kK]\s*[-–—to]+\s*\$\d+[kK]/i,
+      /(?:salary|compensation|pay)[:\s]*\$[\d,]+(?:\.\d{2})?(?:\s*[-–—to]+\s*\$[\d,]+(?:\.\d{2})?)?/i,
+      /(?:€|£)[\d,]+(?:\.\d{2})?\s*[-–—to]+\s*(?:€|£)[\d,]+(?:\.\d{2})?/i
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) return match[0].trim();
+    }
     return '';
   }
 
@@ -603,11 +942,25 @@
       }
     }
 
+    // Normalize jobType: re-run through extractJobType to ensure it matches
+    // dropdown values exactly (handles JSON-LD formats like "FULL_TIME")
+    const rawJobType = cleanText(data.jobType) || '';
+    const normalizedJobType = extractJobType(rawJobType) || rawJobType;
+    // Only keep the value if it matches a known dropdown option
+    const validJobTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Temporary'];
+    const finalJobType = validJobTypes.includes(normalizedJobType) ? normalizedJobType : '';
+
+    // Normalize workModel similarly
+    const rawWorkModel = cleanText(data.workModel) || '';
+    const normalizedWorkModel = extractWorkModel(rawWorkModel) || rawWorkModel;
+    const validWorkModels = ['Remote', 'Hybrid', 'On-site'];
+    const finalWorkModel = validWorkModels.includes(normalizedWorkModel) ? normalizedWorkModel : '';
+
     return {
       company: company,
       jobTitle: cleanText(data.jobTitle) || '',
-      jobType: extractJobType(data.jobType) || data.jobType || '',
-      workModel: extractWorkModel(data.workModel || data.jobType || '') || '',
+      jobType: finalJobType,
+      workModel: finalWorkModel,
       salary: cleanText(data.salary) || '',
       location: cleanText(data.location) || '',
       dateApplied: '',
@@ -651,12 +1004,12 @@
 
   function injectSaveButton() {
     // Remove existing button if present
-    const existing = document.getElementById('job-tracker-save-btn');
+    const existing = document.getElementById('rolesync-save-btn');
     if (existing) existing.remove();
 
     const button = document.createElement('button');
-    button.id = 'job-tracker-save-btn';
-    button.className = 'job-tracker-floating-btn';
+    button.id = 'rolesync-save-btn';
+    button.className = 'rolesync-floating-btn';
     button.innerHTML = `
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
@@ -675,12 +1028,12 @@
   }
 
   function showToast(message) {
-    const existing = document.getElementById('job-tracker-toast');
+    const existing = document.getElementById('rolesync-toast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
-    toast.id = 'job-tracker-toast';
-    toast.className = 'job-tracker-toast';
+    toast.id = 'rolesync-toast';
+    toast.className = 'rolesync-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
 
@@ -730,19 +1083,38 @@
   // ==================== MESSAGE LISTENER ====================
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'ping') {
+      sendResponse({ ready: isReady });
+      return true;
+    }
+
     if (request.action === 'getJobData') {
       // Re-extract fresh data
       if (currentSite) {
         extractedJobData = extractJobData();
       }
       sendResponse({
-        success: !!extractedJobData,
+        success: !!(extractedJobData && (extractedJobData.jobTitle || extractedJobData.company)),
         data: extractedJobData,
         site: currentSite
       });
     }
 
     if (request.action === 'togglePanel') {
+      // If data hasn't been extracted yet, try now
+      if (!extractedJobData || (!extractedJobData.jobTitle && !extractedJobData.company)) {
+        currentSite = currentSite || detectSite();
+        if (currentSite) {
+          extractedJobData = extractJobData();
+        } else {
+          extractedJobData = extractGeneric();
+          extractedJobData.source = 'Other';
+          extractedJobData.link = cleanUrl(window.location.href);
+          extractedJobData.status = 'Not Applied';
+          extractedJobData = normalizeJobData(extractedJobData);
+        }
+        storeDataForPopup();
+      }
       togglePanel();
       sendResponse({ success: true });
     }
@@ -757,7 +1129,7 @@
   let dragOffsetY = 0;
 
   function togglePanel() {
-    const existingPanel = document.getElementById('job-tracker-panel');
+    const existingPanel = document.getElementById('rolesync-panel');
 
     if (existingPanel) {
       if (panelVisible) {
@@ -767,10 +1139,11 @@
         existingPanel.classList.remove('hidden');
         panelVisible = true;
         // Refresh data when showing
+        currentSite = currentSite || detectSite();
         if (currentSite) {
           extractedJobData = extractJobData();
-          populatePanelForm(extractedJobData);
         }
+        populatePanelForm(extractedJobData);
       }
     } else {
       // Create panel if it doesn't exist
@@ -779,18 +1152,21 @@
   }
 
   function createPanel() {
-    // Re-extract data
-    if (currentSite) {
-      extractedJobData = extractJobData();
+    // Re-extract data if we don't have any
+    if (!extractedJobData || (!extractedJobData.jobTitle && !extractedJobData.company)) {
+      currentSite = currentSite || detectSite();
+      if (currentSite) {
+        extractedJobData = extractJobData();
+      }
     }
 
     const panel = document.createElement('div');
-    panel.id = 'job-tracker-panel';
-    panel.className = 'job-tracker-panel';
+    panel.id = 'rolesync-panel';
+    panel.className = 'rolesync-panel';
     panel.innerHTML = `
       <div class="panel-header" id="panel-header">
         <div class="panel-title">
-          <span>Job Tracker</span>
+          <span>RoleSync</span>
         </div>
         <div class="panel-actions">
           <button class="panel-settings-btn" id="panel-settings" title="Settings">⚙</button>
@@ -1069,7 +1445,7 @@
   function populatePanelForm(data) {
     if (!data) data = {};
 
-    const panel = document.getElementById('job-tracker-panel');
+    const panel = document.getElementById('rolesync-panel');
     if (!panel) return;
 
     // Set text inputs
@@ -1125,7 +1501,7 @@
   async function handlePanelSubmit(e) {
     e.preventDefault();
 
-    const panel = document.getElementById('job-tracker-panel');
+    const panel = document.getElementById('rolesync-panel');
     const form = panel.querySelector('#panel-job-form');
     const errorEl = panel.querySelector('#panel-error');
     const saveBtn = panel.querySelector('#panel-save-btn');

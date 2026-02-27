@@ -1,4 +1,4 @@
-// Popup script for Job Tracker extension
+// Popup script for RoleSync extension
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -50,21 +50,38 @@ async function loadJobData() {
   showState('loading');
 
   try {
-    // First try to get data from the active tab
+    // Get the active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     if (tab && tab.id) {
+      // Try to get data from the content script
+      let response = null;
       try {
-        const response = await chrome.tabs.sendMessage(tab.id, { action: 'getJobData' });
-
-        if (response && response.success && response.data) {
-          populateForm(response.data);
-          showState('form');
-          return;
-        }
+        response = await chrome.tabs.sendMessage(tab.id, { action: 'getJobData' });
       } catch (e) {
-        // Content script not loaded on this page, try storage
-        console.log('Content script not available, checking storage');
+        // Content script not loaded — try injecting it
+        console.log('Content script not available, injecting...');
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js']
+          });
+          await chrome.scripting.insertCSS({
+            target: { tabId: tab.id },
+            files: ['styles.css']
+          });
+          // Wait for content script to initialize and extract data
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          response = await chrome.tabs.sendMessage(tab.id, { action: 'getJobData' });
+        } catch (injectError) {
+          console.log('Could not inject content script:', injectError);
+        }
+      }
+
+      if (response && response.success && response.data) {
+        populateForm(response.data);
+        showState('form');
+        return;
       }
     }
 
@@ -90,8 +107,14 @@ async function loadJobData() {
       }
     }
 
-    // No job data found
-    showState('no-job');
+    // No data from content script or storage — show form with empty fields
+    // so user can still manually fill in job data
+    if (tab && tab.url && !tab.url.startsWith('chrome://')) {
+      document.getElementById('link').value = tab.url;
+      showState('form');
+    } else {
+      showState('no-job');
+    }
   } catch (error) {
     console.error('Error loading job data:', error);
     showState('no-job');
